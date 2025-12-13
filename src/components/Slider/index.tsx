@@ -149,10 +149,10 @@ const Slider = ({
 
   return (
     <div className="relative" data-testid="media-slider">
-      <div className="absolute right-0 -mt-10 flex text-gray-400">
+      <div className="absolute right-0 -mt-10 flex text-slate-400">
         <button
           className={`${
-            scrollPos.isStart ? 'text-gray-800' : 'hover:text-white'
+            scrollPos.isStart ? 'text-[#1f1f2a]' : 'hover:text-white'
           }`}
           onClick={() => slide(Direction.LEFT)}
           disabled={scrollPos.isStart}
@@ -162,7 +162,7 @@ const Slider = ({
         </button>
         <button
           className={`${
-            scrollPos.isEnd ? 'text-gray-800' : 'hover:text-white'
+            scrollPos.isEnd ? 'text-[#1f1f2a]' : 'hover:text-white'
           }`}
           onClick={() => slide(Direction.RIGHT)}
           disabled={scrollPos.isEnd}

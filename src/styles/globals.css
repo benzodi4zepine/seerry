@@ -1,3 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --arkyn-bg: #050505;
+  --arkyn-panel: #0c0c0f;
+  --arkyn-border: #1a1a1f;
+  --arkyn-muted: #9ca3af;
+  --arkyn-ink: #f8fafc;
+  --arkyn-accent: #22c55e;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,11 +19,11 @@
     padding: env(safe-area-inset-top) env(safe-area-inset-right)
       calc(4rem + env(safe-area-inset-bottom)) env(safe-area-inset-left);
     scrollbar-width: thin;
-    scrollbar-color: #4b5563 #1f2937;
+    scrollbar-color: #3f3f46 var(--arkyn-bg);
   }
 
   html:hover {
-    scrollbar-color: #6b7280 #1f2937;
+    scrollbar-color: #a1a1aa var(--arkyn-bg);
   }
 
   /* WebKit scrollbar styles */
@@ -21,15 +32,15 @@
   }
 
   html::-webkit-scrollbar-track {
-    background: #1f2937;
+    background: var(--arkyn-bg);
   }
 
   html::-webkit-scrollbar-thumb {
-    background-color: #4b5563;
+    background-color: #3f3f46;
   }
 
   html:hover::-webkit-scrollbar-thumb {
-    background-color: #6b7280;
+    background-color: #71717a;
   }
 
   @media (min-width: 640px) {
@@ -39,12 +50,14 @@
   }
 
   body {
-    @apply bg-gray-900;
+    background-color: var(--arkyn-bg);
+    color: var(--arkyn-ink);
     -webkit-overflow-scrolling: touch;
   }
 
   code {
-    @apply rounded-md bg-gray-800 px-2 py-1;
+    @apply rounded-md px-2 py-1;
+    background: #111118;
   }
 
   input[type='search']::-webkit-search-cancel-button {
@@ -59,10 +72,12 @@
   }
 
   .sidebar {
-    @apply border-r border-gray-700;
+    @apply border-r;
     padding-top: env(safe-area-inset-top);
     padding-left: env(safe-area-inset-left);
-    background: linear-gradient(180deg, rgba(31, 41, 55, 1) 0%, #131928 100%);
+    border-color: var(--arkyn-border);
+    background: radial-gradient(circle at 30% 20%, #101018 0, #050505 45%),
+      linear-gradient(180deg, #0b0b0f 0%, #050505 100%);
   }
 
   .slideover {
@@ -106,11 +121,11 @@
   }
 
   .slider-title {
-    @apply inline-flex items-center text-xl font-bold leading-7 text-gray-300 sm:truncate sm:text-2xl sm:leading-9;
+    @apply inline-flex items-center text-xl font-semibold leading-7 text-white sm:truncate sm:text-2xl sm:leading-9;
   }
 
   a.slider-title {
-    @apply transition duration-300 hover:text-white;
+    @apply transition duration-300 hover:text-gray-200;
   }
 
   a.slider-title svg {
@@ -307,14 +322,16 @@
   }
 
   input[type='checkbox'] {
-    @apply h-6 w-6 rounded-md text-indigo-600 transition duration-150 ease-in-out;
+    @apply h-6 w-6 rounded-md text-emerald-400 transition duration-150 ease-in-out;
   }
 
   input[type='text'],
   input[type='password'],
   select,
   textarea {
-    @apply block w-full min-w-0 flex-1 rounded-md border border-gray-500 bg-gray-700 text-white transition duration-150 ease-in-out sm:text-sm sm:leading-5;
+    @apply block w-full min-w-0 flex-1 rounded-md text-white transition duration-150 ease-in-out sm:text-sm sm:leading-5;
+    background: #0e0e12;
+    border: 1px solid var(--arkyn-border);
   }
 
   input.rounded-l-only,
@@ -342,7 +359,9 @@
   }
 
   button.input-action {
-    @apply relative -ml-px inline-flex items-center border border-gray-500 bg-indigo-600 bg-opacity-80 px-3 py-2 text-sm font-medium leading-5 text-white last:rounded-r-md sm:px-3.5;
+    @apply relative -ml-px inline-flex items-center border px-3 py-2 text-sm font-medium leading-5 text-white last:rounded-r-md sm:px-3.5;
+    border-color: #1a1a1f;
+    background: linear-gradient(135deg, #1ddf8d, #1d9cf6);
   }
 
   button.input-action[disabled] {
@@ -395,7 +414,9 @@
   }
 
   .react-select-container .react-select__control {
-    @apply rounded-md border border-gray-500 bg-gray-700 text-white hover:border-gray-500;
+    @apply rounded-md text-white;
+    background: #0e0e12;
+    border: 1px solid var(--arkyn-border);
   }
 
   .react-select-container-dark .react-select__control {
@@ -403,7 +424,9 @@
   }
 
   .react-select-container .react-select__control--is-focused {
-    @apply rounded-md border border-gray-500 bg-gray-700 text-white shadow;
+    @apply rounded-md text-white shadow;
+    border: 1px solid #23c584;
+    background: #11111a;
   }
 
   .react-select-container-dark .react-select__control--is-focused {
@@ -411,7 +434,8 @@
   }
 
   .react-select-container .react-select__menu {
-    @apply bg-gray-700 text-gray-300;
+    @apply text-gray-300;
+    background: #0f0f14;
   }
 
   .react-select-container-dark .react-select__menu {
@@ -419,7 +443,8 @@
   }
 
   .react-select-container .react-select__option--is-focused {
-    @apply bg-gray-600 text-white;
+    @apply text-white;
+    background: #1b1b22;
   }
 
   .react-select-container-dark .react-select__option--is-focused {
@@ -427,7 +452,7 @@
   }
 
   .react-select-container .react-select__indicator-separator {
-    @apply bg-gray-500;
+    @apply bg-gray-600;
   }
 
   .react-select-container .react-select__indicator {
@@ -439,7 +464,9 @@
   }
 
   .react-select-container .react-select__multi-value {
-    @apply rounded-md border border-gray-500 bg-gray-800;
+    @apply rounded-md;
+    border: 1px solid var(--arkyn-border);
+    background: #0e0e12;
   }
 
   .react-select-container .react-select__multi-value__label {
@@ -492,7 +519,7 @@
   }
 
   input[type='range']::-webkit-slider-thumb {
-    @apply rounded-full border-0 bg-indigo-500;
+    @apply rounded-full border-0 bg-emerald-400;
     pointer-events: all;
     width: 16px;
     height: 16px;
@@ -500,7 +527,7 @@
   }
 
   input[type='range']::-moz-range-thumb {
-    @apply rounded-full border-0 bg-indigo-500;
+    @apply rounded-full border-0 bg-emerald-400;
     pointer-events: all;
     width: 16px;
     height: 16px;
@@ -546,7 +573,7 @@
   }
 
   .text-overseerr {
-    @apply bg-gradient-to-br from-indigo-400 to-purple-400 bg-clip-text text-transparent;
+    @apply bg-gradient-to-br from-emerald-300 to-cyan-400 bg-clip-text text-transparent;
   }
 
   @media all and (display-mode: browser) {

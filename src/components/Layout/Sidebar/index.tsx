@@ -6,6 +6,7 @@ import { Permission, useUser } from '@app/hooks/useUser';
 import defineMessages from '@app/utils/defineMessages';
 import { Transition } from '@headlessui/react';
 import {
+  BookOpenIcon,
   ClockIcon,
   CogIcon,
   ExclamationTriangleIcon,
@@ -26,12 +27,25 @@ export const menuMessages = defineMessages('components.Layout.Sidebar', {
   dashboard: 'Discover',
   browsemovies: 'Movies',
   browsetv: 'Series',
+  browseebooks: 'Ebooks',
   requests: 'Requests',
   blacklist: 'Blacklist',
   issues: 'Issues',
   users: 'Users',
   settings: 'Settings',
 });
+
+const menuDescriptions = defineMessages(
+  'components.Layout.Sidebar.Descriptions',
+  {
+    discover: 'Browse all available content',
+    movies: 'Find and request movies',
+    tv: 'Browse TV Shows',
+    ebooks: 'Browse ebook library',
+    requests: 'Track your media requests',
+    issues: 'Your reported issues',
+  }
+);
 
 interface SidebarProps {
   open?: boolean;
@@ -51,33 +65,64 @@ interface SidebarLinkProps {
   requiredPermission?: Permission | Permission[];
   permissionType?: 'and' | 'or';
   dataTestId?: string;
+  descriptionKey?: keyof typeof menuDescriptions;
 }
 
-const SidebarLinks: SidebarLinkProps[] = [
+const SidebarBrowseLinks: SidebarLinkProps[] = [
   {
     href: '/',
     messagesKey: 'dashboard',
+    descriptionKey: 'discover',
     svgIcon: <SparklesIcon className="mr-3 h-6 w-6" />,
     activeRegExp: /^\/(discover\/?)?$/,
   },
   {
     href: '/discover/movies',
     messagesKey: 'browsemovies',
+    descriptionKey: 'movies',
     svgIcon: <FilmIcon className="mr-3 h-6 w-6" />,
     activeRegExp: /^\/discover\/movies$/,
   },
   {
     href: '/discover/tv',
     messagesKey: 'browsetv',
+    descriptionKey: 'tv',
     svgIcon: <TvIcon className="mr-3 h-6 w-6" />,
     activeRegExp: /^\/discover\/tv$/,
   },
   {
+    href: '/discover/ebooks',
+    messagesKey: 'browseebooks',
+    descriptionKey: 'ebooks',
+    svgIcon: <BookOpenIcon className="mr-3 h-6 w-6" />,
+    activeRegExp: /^\/discover\/ebooks$/,
+  },
+];
+
+const SidebarActivityLinks: SidebarLinkProps[] = [
+  {
     href: '/requests',
     messagesKey: 'requests',
+    descriptionKey: 'requests',
     svgIcon: <ClockIcon className="mr-3 h-6 w-6" />,
     activeRegExp: /^\/requests/,
   },
+  {
+    href: '/issues',
+    messagesKey: 'issues',
+    descriptionKey: 'issues',
+    svgIcon: <ExclamationTriangleIcon className="mr-3 h-6 w-6" />,
+    activeRegExp: /^\/issues/,
+    requiredPermission: [
+      Permission.MANAGE_ISSUES,
+      Permission.CREATE_ISSUES,
+      Permission.VIEW_ISSUES,
+    ],
+    permissionType: 'or',
+  },
+];
+
+const SidebarAdminLinks: SidebarLinkProps[] = [
   {
     href: '/blacklist',
     messagesKey: 'blacklist',
@@ -86,18 +131,6 @@ const SidebarLinks: SidebarLinkProps[] = [
     requiredPermission: [
       Permission.MANAGE_BLACKLIST,
       Permission.VIEW_BLACKLIST,
-    ],
-    permissionType: 'or',
-  },
-  {
-    href: '/issues',
-    messagesKey: 'issues',
-    svgIcon: <ExclamationTriangleIcon className="mr-3 h-6 w-6" />,
-    activeRegExp: /^\/issues/,
-    requiredPermission: [
-      Permission.MANAGE_ISSUES,
-      Permission.CREATE_ISSUES,
-      Permission.VIEW_ISSUES,
     ],
     permissionType: 'or',
   },
@@ -163,7 +196,7 @@ const Sidebar = ({
               leaveTo="opacity-0"
             >
               <div className="fixed inset-0">
-                <div className="absolute inset-0 bg-gray-900 opacity-90"></div>
+                <div className="absolute inset-0 bg-black/80"></div>
               </div>
             </Transition.Child>
             <Transition.Child
@@ -176,10 +209,10 @@ const Sidebar = ({
               leaveTo="-translate-x-full"
             >
               <>
-                <div className="sidebar relative flex h-full w-full max-w-xs flex-1 flex-col bg-gray-800">
+                <div className="sidebar relative flex h-full w-full max-w-xs flex-1 flex-col">
                   <div className="sidebar-close-button absolute right-0 -mr-14 p-1">
                     <button
-                      className="flex h-12 w-12 items-center justify-center rounded-full focus:bg-gray-600 focus:outline-none"
+                      className="flex h-12 w-12 items-center justify-center rounded-full text-white transition hover:bg-[#16161f] focus:bg-[#16161f] focus:outline-none"
                       aria-label="Close sidebar"
                       onClick={() => setClosed()}
                     >
@@ -192,48 +225,233 @@ const Sidebar = ({
                   >
                     <div className="flex flex-shrink-0 items-center px-2">
                       <span className="w-full px-4 text-xl text-gray-50">
-                        <Link href="/" className="relative block h-24 w-64">
-                          <Image src="/logo_full.svg" alt="Logo" fill />
+                        <Link href="/" className="relative block h-16 w-32">
+                          <Image
+                            src="/logo_full.png"
+                            alt="Logo"
+                            fill
+                            style={{ objectFit: 'contain' }}
+                            sizes="128px"
+                          />
                         </Link>
                       </span>
                     </div>
-                    <nav className="mt-10 flex-1 space-y-4 px-4">
-                      {SidebarLinks.filter((link) =>
-                        link.requiredPermission
-                          ? hasPermission(link.requiredPermission, {
-                              type: link.permissionType ?? 'and',
-                            })
-                          : true
-                      ).map((sidebarLink) => {
-                        return (
-                          <Link
-                            key={`mobile-${sidebarLink.messagesKey}`}
-                            href={sidebarLink.href}
-                            as={sidebarLink.as}
-                            onClick={() => setClosed()}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                setClosed();
-                              }
-                            }}
-                            role="button"
-                            tabIndex={0}
-                            className={`flex items-center rounded-md px-2 py-2 text-base font-medium leading-6 text-white transition duration-150 ease-in-out focus:outline-none
-                            ${
-                              router.pathname.match(sidebarLink.activeRegExp)
-                                ? 'bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500'
-                                : 'hover:bg-gray-700 focus:bg-gray-700'
-                            }
-                          `}
-                            data-testid={`${sidebarLink.dataTestId}-mobile`}
-                          >
-                            {sidebarLink.svgIcon}
-                            {intl.formatMessage(
-                              menuMessages[sidebarLink.messagesKey]
-                            )}
-                          </Link>
-                        );
-                      })}
+                    <nav className="mt-10 flex-1 space-y-6 px-4">
+                      <div>
+                        <div className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                          Browse Media
+                        </div>
+                        <div className="space-y-3">
+                          {SidebarBrowseLinks.filter((link) =>
+                            link.requiredPermission
+                              ? hasPermission(link.requiredPermission, {
+                                  type: link.permissionType ?? 'and',
+                                })
+                              : true
+                          ).map((sidebarLink) => {
+                            return (
+                              <Link
+                                key={`mobile-${sidebarLink.messagesKey}`}
+                                href={sidebarLink.href}
+                                as={sidebarLink.as}
+                                onClick={() => setClosed()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    setClosed();
+                                  }
+                                }}
+                                role="button"
+                                tabIndex={0}
+                                className={`group flex items-center rounded-2xl border px-4 py-3 text-base font-semibold leading-6 transition duration-200 ease-in-out focus:outline-none
+                      ${
+                        router.pathname.match(sidebarLink.activeRegExp)
+                          ? 'border-transparent bg-white text-[#0b0b0f] shadow-[0_14px_35px_rgba(0,0,0,0.45)]'
+                          : 'border-transparent text-slate-300 hover:border-[#1f1f2a] hover:bg-[#0f1016] hover:text-white'
+                      }`}
+                                data-testid={`${sidebarLink.dataTestId}-mobile`}
+                              >
+                                <div className="mr-2 text-xl text-inherit">
+                                  {sidebarLink.svgIcon}
+                                </div>
+                                <div className="flex flex-col text-left leading-5">
+                                  <span
+                                    className={`text-base font-semibold ${
+                                      router.pathname.match(
+                                        sidebarLink.activeRegExp
+                                      )
+                                        ? 'text-[#0b0b0f]'
+                                        : 'text-inherit'
+                                    }`}
+                                  >
+                                    {intl.formatMessage(
+                                      menuMessages[sidebarLink.messagesKey]
+                                    )}
+                                  </span>
+                                  {sidebarLink.descriptionKey && (
+                                    <span
+                                      className={`text-xs font-medium ${
+                                        router.pathname.match(
+                                          sidebarLink.activeRegExp
+                                        )
+                                          ? 'text-slate-600'
+                                          : 'text-slate-400'
+                                      }`}
+                                    >
+                                      {intl.formatMessage(
+                                        menuDescriptions[
+                                          sidebarLink.descriptionKey
+                                        ]
+                                      )}
+                                    </span>
+                                  )}
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                          Your Activity
+                        </div>
+                        {SidebarActivityLinks.filter((link) =>
+                          link.requiredPermission
+                            ? hasPermission(link.requiredPermission, {
+                                type: link.permissionType ?? 'and',
+                              })
+                            : true
+                        ).map((sidebarLink) => {
+                          return (
+                            <Link
+                              key={`mobile-${sidebarLink.messagesKey}`}
+                              href={sidebarLink.href}
+                              as={sidebarLink.as}
+                              onClick={() => setClosed()}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  setClosed();
+                                }
+                              }}
+                              role="button"
+                              tabIndex={0}
+                              className={`group flex items-center rounded-2xl border px-4 py-3 text-base font-semibold leading-6 transition duration-200 ease-in-out focus:outline-none
+                      ${
+                        router.pathname.match(sidebarLink.activeRegExp)
+                          ? 'border-transparent bg-white text-[#0b0b0f] shadow-[0_14px_35px_rgba(0,0,0,0.45)]'
+                          : 'border-transparent text-slate-300 hover:border-[#1f1f2a] hover:bg-[#0f1016] hover:text-white'
+                      }`}
+                              data-testid={`${sidebarLink.dataTestId}-mobile`}
+                            >
+                              <div className="mr-2 text-xl text-inherit">
+                                {sidebarLink.svgIcon}
+                              </div>
+                              <div className="flex flex-col text-left leading-5">
+                                <span
+                                  className={`text-base font-semibold ${
+                                    router.pathname.match(
+                                      sidebarLink.activeRegExp
+                                    )
+                                      ? 'text-[#0b0b0f]'
+                                      : 'text-inherit'
+                                  }`}
+                                >
+                                  {intl.formatMessage(
+                                    menuMessages[sidebarLink.messagesKey]
+                                  )}
+                                </span>
+                                {sidebarLink.descriptionKey && (
+                                  <span
+                                    className={`text-xs font-medium ${
+                                      router.pathname.match(
+                                        sidebarLink.activeRegExp
+                                      )
+                                        ? 'text-slate-600'
+                                        : 'text-slate-400'
+                                    }`}
+                                  >
+                                    {intl.formatMessage(
+                                      menuDescriptions[
+                                        sidebarLink.descriptionKey
+                                      ]
+                                    )}
+                                  </span>
+                                )}
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                      <div className="space-y-3">
+                        <div className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                          Admin
+                        </div>
+                        {SidebarAdminLinks.filter((link) =>
+                          link.requiredPermission
+                            ? hasPermission(link.requiredPermission, {
+                                type: link.permissionType ?? 'and',
+                              })
+                            : true
+                        ).map((sidebarLink) => {
+                          return (
+                            <Link
+                              key={`mobile-${sidebarLink.messagesKey}`}
+                              href={sidebarLink.href}
+                              as={sidebarLink.as}
+                              onClick={() => setClosed()}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  setClosed();
+                                }
+                              }}
+                              role="button"
+                              tabIndex={0}
+                              className={`group flex items-center rounded-2xl border px-4 py-3 text-base font-semibold leading-6 transition duration-200 ease-in-out focus:outline-none
+                        ${
+                          router.pathname.match(sidebarLink.activeRegExp)
+                            ? 'border-transparent bg-white text-[#0b0b0f] shadow-[0_14px_35px_rgba(0,0,0,0.45)]'
+                            : 'border-transparent text-slate-300 hover:border-[#1f1f2a] hover:bg-[#0f1016] hover:text-white'
+                        }`}
+                              data-testid={`${sidebarLink.dataTestId}-mobile`}
+                            >
+                              <div className="mr-2 text-xl text-inherit">
+                                {sidebarLink.svgIcon}
+                              </div>
+                              <div className="flex flex-col text-left leading-5">
+                                <span
+                                  className={`text-base font-semibold ${
+                                    router.pathname.match(
+                                      sidebarLink.activeRegExp
+                                    )
+                                      ? 'text-[#0b0b0f]'
+                                      : 'text-inherit'
+                                  }`}
+                                >
+                                  {intl.formatMessage(
+                                    menuMessages[sidebarLink.messagesKey]
+                                  )}
+                                </span>
+                                {sidebarLink.descriptionKey && (
+                                  <span
+                                    className={`text-xs font-medium ${
+                                      router.pathname.match(
+                                        sidebarLink.activeRegExp
+                                      )
+                                        ? 'text-slate-600'
+                                        : 'text-slate-400'
+                                    }`}
+                                  >
+                                    {intl.formatMessage(
+                                      menuDescriptions[
+                                        sidebarLink.descriptionKey
+                                      ]
+                                    )}
+                                  </span>
+                                )}
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
                     </nav>
                     <div className="px-2">
                       <UserWarnings onClick={() => setClosed()} />
@@ -261,70 +479,204 @@ const Sidebar = ({
             <div className="flex flex-1 flex-col overflow-y-auto pb-4">
               <div className="flex flex-shrink-0 items-center">
                 <span className="w-full px-4 py-2 text-2xl text-gray-50">
-                  <Link href="/" className="relative block h-24">
-                    <Image src="/logo_full.svg" alt="Logo" fill />
+                  <Link href="/" className="relative block h-16 w-32">
+                    <Image
+                      src="/logo_full.png"
+                      alt="Logo"
+                      fill
+                      style={{ objectFit: 'contain' }}
+                      sizes="128px"
+                    />
                   </Link>
                 </span>
               </div>
-              <nav className="mt-8 flex-1 space-y-4 px-4">
-                {SidebarLinks.filter((link) =>
-                  link.requiredPermission
-                    ? hasPermission(link.requiredPermission, {
-                        type: link.permissionType ?? 'and',
-                      })
-                    : true
-                ).map((sidebarLink) => {
-                  return (
-                    <Link
-                      key={`desktop-${sidebarLink.messagesKey}`}
-                      href={sidebarLink.href}
-                      as={sidebarLink.as}
-                      className={`group flex items-center rounded-md px-2 py-2 text-lg font-medium leading-6 text-white transition duration-150 ease-in-out focus:outline-none
-                              ${
+              <nav className="mt-8 flex-1 space-y-6 px-4">
+                <div>
+                  <div className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Browse Media
+                  </div>
+                  <div className="space-y-3">
+                    {SidebarBrowseLinks.filter((link) =>
+                      link.requiredPermission
+                        ? hasPermission(link.requiredPermission, {
+                            type: link.permissionType ?? 'and',
+                          })
+                        : true
+                    ).map((sidebarLink) => {
+                      return (
+                        <Link
+                          key={`desktop-${sidebarLink.messagesKey}`}
+                          href={sidebarLink.href}
+                          as={sidebarLink.as}
+                          className={`group flex items-center rounded-2xl border px-4 py-3 text-lg font-semibold leading-6 transition duration-200 ease-in-out focus:outline-none
+                        ${
+                          router.pathname.match(sidebarLink.activeRegExp)
+                            ? 'border-transparent bg-white text-[#0b0b0f] shadow-[0_14px_35px_rgba(0,0,0,0.45)]'
+                            : 'border-transparent text-slate-300 hover:border-[#1f1f2a] hover:bg-[#0f1016] hover:text-white'
+                        }`}
+                          data-testid={sidebarLink.dataTestId}
+                        >
+                          <div className="mr-2 text-xl text-inherit">
+                            {sidebarLink.svgIcon}
+                          </div>
+                          <div className="flex flex-col text-left leading-6">
+                            <span
+                              className={`text-base font-semibold ${
                                 router.pathname.match(sidebarLink.activeRegExp)
-                                  ? 'bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500'
-                                  : 'hover:bg-gray-700 focus:bg-gray-700'
-                              }
-                            `}
-                      data-testid={sidebarLink.dataTestId}
-                    >
-                      {sidebarLink.svgIcon}
-                      {intl.formatMessage(
-                        menuMessages[sidebarLink.messagesKey]
-                      )}
-                      {sidebarLink.messagesKey === 'requests' &&
-                        pendingRequestsCount > 0 &&
-                        hasPermission(Permission.MANAGE_REQUESTS) && (
-                          <div className="ml-auto flex">
-                            <Badge
-                              className={`rounded-md bg-gradient-to-br ${
-                                router.pathname.match(sidebarLink.activeRegExp)
-                                  ? 'border-indigo-600 from-indigo-700 to-purple-700'
-                                  : 'border-indigo-500 from-indigo-600 to-purple-600'
+                                  ? 'text-[#0b0b0f]'
+                                  : 'text-inherit'
                               }`}
                             >
-                              {pendingRequestsCount}
-                            </Badge>
+                              {intl.formatMessage(
+                                menuMessages[sidebarLink.messagesKey]
+                              )}
+                            </span>
+                            {sidebarLink.descriptionKey && (
+                              <span
+                                className={`text-xs font-medium ${
+                                  router.pathname.match(
+                                    sidebarLink.activeRegExp
+                                  )
+                                    ? 'text-slate-600'
+                                    : 'text-slate-400'
+                                }`}
+                              >
+                                {intl.formatMessage(
+                                  menuDescriptions[sidebarLink.descriptionKey]
+                                )}
+                              </span>
+                            )}
                           </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Your Activity
+                  </div>
+                  {SidebarActivityLinks.filter((link) =>
+                    link.requiredPermission
+                      ? hasPermission(link.requiredPermission, {
+                          type: link.permissionType ?? 'and',
+                        })
+                      : true
+                  ).map((sidebarLink) => {
+                    return (
+                      <Link
+                        key={`desktop-${sidebarLink.messagesKey}`}
+                        href={sidebarLink.href}
+                        as={sidebarLink.as}
+                        className={`group flex items-center rounded-2xl border px-4 py-3 text-lg font-semibold leading-6 transition duration-200 ease-in-out focus:outline-none
+                        ${
+                          router.pathname.match(sidebarLink.activeRegExp)
+                            ? 'border-transparent bg-white text-[#0b0b0f] shadow-[0_14px_35px_rgba(0,0,0,0.45)]'
+                            : 'border-transparent text-slate-300 hover:border-[#1f1f2a] hover:bg-[#0f1016] hover:text-white'
+                        }`}
+                        data-testid={sidebarLink.dataTestId}
+                      >
+                        {sidebarLink.svgIcon}
+                        {intl.formatMessage(
+                          menuMessages[sidebarLink.messagesKey]
                         )}
-                      {sidebarLink.messagesKey === 'issues' &&
-                        openIssuesCount > 0 &&
-                        hasPermission(Permission.MANAGE_ISSUES) && (
-                          <div className="ml-auto flex">
-                            <Badge
-                              className={`rounded-md bg-gradient-to-br ${
+                        {sidebarLink.messagesKey === 'requests' &&
+                          pendingRequestsCount > 0 &&
+                          hasPermission(Permission.MANAGE_REQUESTS) && (
+                            <div className="ml-auto flex">
+                              <Badge
+                                className={`rounded-md bg-gradient-to-br ${
+                                  router.pathname.match(
+                                    sidebarLink.activeRegExp
+                                  )
+                                    ? 'border-emerald-500 from-emerald-500 to-cyan-500'
+                                    : 'border-emerald-400 from-emerald-400 to-cyan-500'
+                                }`}
+                              >
+                                {pendingRequestsCount}
+                              </Badge>
+                            </div>
+                          )}
+                        {sidebarLink.messagesKey === 'issues' &&
+                          openIssuesCount > 0 &&
+                          hasPermission(Permission.MANAGE_ISSUES) && (
+                            <div className="ml-auto flex">
+                              <Badge
+                                className={`rounded-md bg-gradient-to-br ${
+                                  router.pathname.match(
+                                    sidebarLink.activeRegExp
+                                  )
+                                    ? 'border-emerald-500 from-emerald-500 to-cyan-500'
+                                    : 'border-emerald-400 from-emerald-400 to-cyan-500'
+                                }`}
+                              >
+                                {openIssuesCount}
+                              </Badge>
+                            </div>
+                          )}
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                <div className="space-y-3">
+                  <div className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Admin
+                  </div>
+                  {SidebarAdminLinks.filter((link) =>
+                    link.requiredPermission
+                      ? hasPermission(link.requiredPermission, {
+                          type: link.permissionType ?? 'and',
+                        })
+                      : true
+                  ).map((sidebarLink) => {
+                    return (
+                      <Link
+                        key={`desktop-${sidebarLink.messagesKey}`}
+                        href={sidebarLink.href}
+                        as={sidebarLink.as}
+                        className={`group flex items-center rounded-2xl border px-4 py-3 text-lg font-semibold leading-6 transition duration-200 ease-in-out focus:outline-none
+                        ${
+                          router.pathname.match(sidebarLink.activeRegExp)
+                            ? 'border-transparent bg-white text-[#0b0b0f] shadow-[0_14px_35px_rgba(0,0,0,0.45)]'
+                            : 'border-transparent text-slate-300 hover:border-[#1f1f2a] hover:bg-[#0f1016] hover:text-white'
+                        }`}
+                        data-testid={sidebarLink.dataTestId}
+                      >
+                        <div className="mr-2 text-xl text-inherit">
+                          {sidebarLink.svgIcon}
+                        </div>
+                        <div className="flex flex-col text-left leading-6">
+                          <span
+                            className={`text-base font-semibold ${
+                              router.pathname.match(sidebarLink.activeRegExp)
+                                ? 'text-[#0b0b0f]'
+                                : 'text-inherit'
+                            }`}
+                          >
+                            {intl.formatMessage(
+                              menuMessages[sidebarLink.messagesKey]
+                            )}
+                          </span>
+                          {sidebarLink.descriptionKey && (
+                            <span
+                              className={`text-xs font-medium ${
                                 router.pathname.match(sidebarLink.activeRegExp)
-                                  ? 'border-indigo-600 from-indigo-700 to-purple-700'
-                                  : 'border-indigo-500 from-indigo-600 to-purple-600'
+                                  ? 'text-slate-600'
+                                  : 'text-slate-400'
                               }`}
                             >
-                              {openIssuesCount}
-                            </Badge>
-                          </div>
-                        )}
-                    </Link>
-                  );
-                })}
+                              {intl.formatMessage(
+                                menuDescriptions[sidebarLink.descriptionKey]
+                              )}
+                            </span>
+                          )}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
               </nav>
               <div className="px-2">
                 <UserWarnings />

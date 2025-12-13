@@ -271,7 +271,7 @@ const TitleCard = ({
 
   return (
     <div
-      className={canExpand ? 'w-full' : 'w-36 sm:w-36 md:w-44'}
+      className={canExpand ? 'w-full' : 'w-40 sm:w-44 md:w-48'}
       data-testid="title-card"
       ref={cardRef}
     >
@@ -304,10 +304,10 @@ const TitleCard = ({
         isUpdating={isUpdating}
       />
       <div
-        className={`relative transform-gpu cursor-default overflow-hidden rounded-xl bg-gray-800 bg-cover outline-none ring-1 transition duration-300 ${
+        className={`relative transform-gpu cursor-default overflow-hidden rounded-2xl bg-[#0c0c10] bg-cover outline-none ring-1 transition duration-300 ${
           showDetail
-            ? 'scale-105 shadow-lg ring-gray-500'
-            : 'scale-100 shadow ring-gray-700'
+            ? 'scale-[1.02] shadow-[0_24px_60px_rgba(0,0,0,0.6)] ring-[#23c584]'
+            : 'scale-100 shadow-[0_16px_45px_rgba(0,0,0,0.5)] ring-[#1a1a1f]'
         }`}
         style={{
           paddingBottom: '150%',
@@ -342,13 +342,19 @@ const TitleCard = ({
           />
           <div className="absolute left-0 right-0 flex items-center justify-between p-2">
             <div
-              className={`pointer-events-none z-40 self-start rounded-full border bg-opacity-80 shadow-md ${
+              className={`pointer-events-none z-40 self-start rounded-full border bg-opacity-20 px-1.5 shadow-md ${
                 mediaType === 'movie' || mediaType === 'collection'
-                  ? 'border-blue-500 bg-blue-600'
-                  : 'border-purple-600 bg-purple-600'
+                  ? 'bg-cyan-400/15 border-cyan-400'
+                  : 'bg-violet-400/15 border-violet-400'
               }`}
             >
-              <div className="flex h-4 items-center px-2 py-2 text-center text-xs font-medium uppercase tracking-wider text-white sm:h-5">
+              <div
+                className={`flex h-4 items-center px-2 py-2 text-center text-[10px] font-semibold uppercase tracking-wider sm:h-5 ${
+                  mediaType === 'movie' || mediaType === 'collection'
+                    ? 'text-cyan-200'
+                    : 'text-violet-100'
+                }`}
+              >
                 {mediaType === 'movie'
                   ? intl.formatMessage(globalMessages.movie)
                   : mediaType === 'collection'
@@ -433,7 +439,7 @@ const TitleCard = ({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="absolute inset-0 z-40 flex items-center justify-center rounded-xl bg-gray-800 bg-opacity-75 text-white">
+            <div className="absolute inset-0 z-40 flex items-center justify-center rounded-xl bg-black/70 text-white">
               <Spinner className="h-10 w-10" />
             </div>
           </Transition>
@@ -460,7 +466,7 @@ const TitleCard = ({
                 className="absolute inset-0 h-full w-full cursor-pointer overflow-hidden text-left"
                 style={{
                   background:
-                    'linear-gradient(180deg, rgba(45, 55, 72, 0.4) 0%, rgba(45, 55, 72, 0.9) 100%)',
+                    'linear-gradient(180deg, rgba(5, 5, 8, 0.35) 0%, rgba(5, 5, 8, 0.95) 100%)',
                 }}
               >
                 <div className="flex h-full w-full items-end">

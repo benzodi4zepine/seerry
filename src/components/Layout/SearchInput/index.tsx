@@ -19,12 +19,12 @@ const SearchInput = () => {
         </label>
         <div className="relative flex w-full items-center text-white focus-within:text-gray-200">
           <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center">
-            <MagnifyingGlassIcon className="h-5 w-5" />
+            <MagnifyingGlassIcon className="h-5 w-5 text-slate-400" />
           </div>
           <input
             id="search_field"
             style={{ paddingRight: searchValue.length > 0 ? '1.75rem' : '' }}
-            className="block w-full rounded-full border border-gray-600 bg-gray-900 bg-opacity-80 py-2 pl-10 text-white placeholder-gray-300 hover:border-gray-500 focus:border-gray-500 focus:bg-opacity-100 focus:placeholder-gray-400 focus:outline-none focus:ring-0 sm:text-base"
+            className="block w-full rounded-full border border-[#1a1a1f] bg-[#0c0c10]/90 py-2.5 pl-10 text-white placeholder-slate-500 shadow-[0_12px_35px_rgba(0,0,0,0.45)] transition hover:border-[#23c584] focus:border-[#23c584] focus:bg-[#0f0f14] focus:placeholder-slate-400 focus:outline-none focus:ring-0 sm:text-base"
             placeholder={intl.formatMessage(messages.searchPlaceholder)}
             type="search"
             autoComplete="off"

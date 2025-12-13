@@ -4,6 +4,7 @@ import useClickOutside from '@app/hooks/useClickOutside';
 import { Permission, useUser } from '@app/hooks/useUser';
 import { Transition } from '@headlessui/react';
 import {
+  BookOpenIcon,
   ClockIcon,
   CogIcon,
   EllipsisHorizontalIcon,
@@ -15,6 +16,7 @@ import {
   UsersIcon,
 } from '@heroicons/react/24/outline';
 import {
+  BookOpenIcon as FilledBookOpenIcon,
   ClockIcon as FilledClockIcon,
   CogIcon as FilledCogIcon,
   ExclamationTriangleIcon as FilledExclamationTriangleIcon,
@@ -91,6 +93,13 @@ const MobileMenu = ({
       svgIcon: <TvIcon className="h-6 w-6" />,
       svgIconSelected: <FilledTvIcon className="h-6 w-6" />,
       activeRegExp: /^\/discover\/tv$/,
+    },
+    {
+      href: '/discover/ebooks',
+      content: intl.formatMessage(menuMessages.browseebooks),
+      svgIcon: <BookOpenIcon className="h-6 w-6" />,
+      svgIconSelected: <FilledBookOpenIcon className="h-6 w-6" />,
+      activeRegExp: /^\/discover\/ebooks$/,
     },
     {
       href: '/requests',
@@ -179,7 +188,7 @@ const MobileMenu = ({
         leave="transition duration-500"
         leaveFrom="opacity-100 -translate-y-full"
         leaveTo="opacity-0 translate-y-0"
-        className="absolute top-0 left-0 right-0 flex w-full -translate-y-full flex-col space-y-6 border-t border-gray-600 bg-gray-900 bg-opacity-90 px-6 py-6 font-semibold text-gray-100 backdrop-blur"
+        className="absolute top-0 left-0 right-0 flex w-full -translate-y-full flex-col space-y-6 border-t border-[#1a1a1f] bg-[#0c0c10]/95 px-6 py-6 font-semibold text-white backdrop-blur"
       >
         {filteredLinks.map((link) => {
           const isActive = router.pathname.match(link.activeRegExp);
@@ -188,7 +197,7 @@ const MobileMenu = ({
               key={`mobile-menu-link-${link.href}`}
               href={link.href}
               className={`flex items-center ${
-                isActive ? 'text-indigo-500' : ''
+                isActive ? 'text-emerald-400' : 'text-slate-300'
               }`}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -207,7 +216,7 @@ const MobileMenu = ({
                 pendingRequestsCount > 0 &&
                 hasPermission(Permission.MANAGE_REQUESTS) && (
                   <div className="ml-auto flex">
-                    <Badge className="rounded-md border-indigo-500 bg-gradient-to-br from-indigo-600 to-purple-600">
+                    <Badge className="rounded-md border-emerald-400 bg-gradient-to-br from-emerald-400 to-cyan-500">
                       {pendingRequestsCount}
                     </Badge>
                   </div>
@@ -216,7 +225,7 @@ const MobileMenu = ({
                 openIssuesCount > 0 &&
                 hasPermission(Permission.MANAGE_ISSUES) && (
                   <div className="ml-auto flex">
-                    <Badge className="rounded-md border-indigo-500 bg-gradient-to-br from-indigo-600 to-purple-600">
+                    <Badge className="rounded-md border-emerald-400 bg-gradient-to-br from-emerald-400 to-cyan-500">
                       {openIssuesCount}
                     </Badge>
                   </div>
@@ -225,8 +234,8 @@ const MobileMenu = ({
           );
         })}
       </Transition>
-      <div className="padding-bottom-safe border-t border-gray-600 bg-gray-800 bg-opacity-90 backdrop-blur">
-        <div className="flex h-full items-center justify-between px-6 py-4 text-gray-100">
+      <div className="padding-bottom-safe border-t border-[#1a1a1f] bg-[#0d0d12]/95 backdrop-blur">
+        <div className="flex h-full items-center justify-between px-6 py-4 text-white">
           {filteredLinks
             .slice(0, filteredLinks.length === 5 ? 5 : 4)
             .map((link) => {
@@ -237,7 +246,7 @@ const MobileMenu = ({
                   key={`mobile-menu-link-${link.href}`}
                   href={link.href}
                   className={`relative flex flex-col items-center space-y-1 ${
-                    isActive ? 'text-indigo-500' : ''
+                    isActive ? 'text-emerald-400' : 'text-slate-300'
                   }`}
                 >
                   {cloneElement(
@@ -253,8 +262,8 @@ const MobileMenu = ({
                         <Badge
                           className={`bg-gradient-to-br ${
                             router.pathname.match(link.activeRegExp)
-                              ? 'border-indigo-600 from-indigo-700 to-purple-700'
-                              : 'border-indigo-500 from-indigo-600 to-purple-600'
+                              ? 'border-emerald-500 from-emerald-500 to-cyan-500'
+                              : 'border-emerald-400 from-emerald-400 to-cyan-500'
                           } flex ${
                             pendingRequestsCount > 99 ? 'w-6' : 'w-4'
                           } h-4  items-center justify-center !px-[5px] !py-[7px] text-[8px]`}
@@ -271,7 +280,7 @@ const MobileMenu = ({
           {filteredLinks.length > 4 && filteredLinks.length !== 5 && (
             <button
               className={`flex flex-col items-center space-y-1 ${
-                isOpen ? 'text-indigo-500' : ''
+                isOpen ? 'text-emerald-400' : 'text-slate-300'
               }`}
               onClick={() => toggle()}
             >

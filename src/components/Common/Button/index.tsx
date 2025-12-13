@@ -52,32 +52,32 @@ function Button<P extends ElementTypes = 'button'>(
   switch (buttonType) {
     case 'primary':
       buttonStyle.push(
-        'text-white border border-indigo-500 bg-indigo-600 bg-opacity-80 hover:bg-opacity-100 hover:border-indigo-500 focus:border-indigo-700 focus:ring-indigo active:bg-opacity-100 active:border-indigo-700'
+        'text-[#050505] border-transparent bg-gradient-to-r from-emerald-400 to-cyan-500 shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:from-emerald-300 hover:to-cyan-400 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-0'
       );
       break;
     case 'danger':
       buttonStyle.push(
-        'text-white bg-red-600 bg-opacity-80 border-red-500 hover:bg-opacity-100 hover:border-red-500 focus:border-red-700 focus:ring-red active:bg-red-700 active:border-red-700'
+        'text-white border border-red-600 bg-red-600/80 hover:bg-red-600 focus:border-red-700 focus:ring-2 focus:ring-red-500 active:bg-red-700'
       );
       break;
     case 'warning':
       buttonStyle.push(
-        'text-white border border-yellow-500 bg-yellow-500 bg-opacity-80 hover:bg-opacity-100 hover:border-yellow-400 focus:border-yellow-700 focus:ring-yellow active:bg-opacity-100 active:border-yellow-700'
+        'text-white border border-amber-500 bg-amber-500/90 hover:bg-amber-400 focus:ring-2 focus:ring-amber-500'
       );
       break;
     case 'success':
       buttonStyle.push(
-        'text-white bg-green-500 bg-opacity-80 border-green-500 hover:bg-opacity-100 hover:border-green-400 focus:border-green-700 focus:ring-green active:bg-opacity-100 active:border-green-700'
+        'text-white border border-emerald-500 bg-emerald-500/90 hover:bg-emerald-400 focus:ring-2 focus:ring-emerald-400'
       );
       break;
     case 'ghost':
       buttonStyle.push(
-        'text-white bg-transparent border-gray-600 hover:border-gray-200 focus:border-gray-100 active:border-gray-100'
+        'text-slate-200 bg-transparent border-transparent hover:border-[#1f1f2a] hover:text-white focus:border-[#1f1f2a]'
       );
       break;
     default:
       buttonStyle.push(
-        'text-gray-200 bg-gray-800 bg-opacity-80 border-gray-600 hover:text-white hover:bg-gray-700 hover:border-gray-600 group-hover:text-white group-hover:bg-gray-700 group-hover:border-gray-600 focus:border-blue-300 focus:ring-blue active:text-gray-200 active:bg-gray-700 active:border-gray-600'
+        'text-slate-100 bg-[#0f0f14] border border-[#1a1a1f] hover:border-[#23c584] hover:text-white hover:bg-[#12121a] group-hover:text-white group-hover:border-[#23c584] focus:border-[#23c584]'
       );
   }
 
