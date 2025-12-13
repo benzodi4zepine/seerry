@@ -178,6 +178,7 @@ authRoutes.post('/plex', async (req, res, next) => {
             permissions: settings.main.defaultPermissions,
             avatar: account.thumb,
             userType: UserType.PLEX,
+            expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
           });
 
           await userRepository.save(user);
@@ -472,6 +473,7 @@ authRoutes.post('/jellyfin', async (req, res, next) => {
           settings.main.mediaServerType === MediaServerType.JELLYFIN
             ? UserType.JELLYFIN
             : UserType.EMBY,
+        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
       });
       user.avatar = getUserAvatarUrl(user);
 

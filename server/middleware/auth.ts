@@ -30,6 +30,13 @@ export const checkUser: Middleware = async (req, _res, next) => {
   }
 
   if (user) {
+    // Check if user account has expired (except owner user)
+    if (user.id !== 1 && user.expiryDate && new Date() > user.expiryDate) {
+      return next({
+        status: 401,
+        message: 'Your account has expired. Please contact an administrator.',
+      });
+    }
     req.user = user;
   }
 

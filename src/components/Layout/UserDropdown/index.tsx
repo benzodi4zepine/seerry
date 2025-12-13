@@ -6,6 +6,7 @@ import { Menu, Transition } from '@headlessui/react';
 import {
   ArrowRightOnRectangleIcon,
   ClockIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { CogIcon, UserIcon } from '@heroicons/react/24/solid';
 import axios from 'axios';
@@ -19,6 +20,8 @@ const messages = defineMessages('components.Layout.UserDropdown', {
   settings: 'Settings',
   requests: 'Requests',
   signout: 'Sign Out',
+  expiresoon: 'Expires in {days, plural, one {# day} other {# days}}',
+  accountexpired: 'Account expired',
 });
 
 const ForwardedLink = forwardRef<
@@ -97,6 +100,47 @@ const UserDropdown = () => {
                 </div>
               </div>
               {user && <MiniQuotaDisplay userId={user?.id} />}
+              {user?.expiryDate &&
+                (() => {
+                  const now = new Date();
+                  const expiryDate = new Date(user.expiryDate);
+                  const daysRemaining = Math.ceil(
+                    (expiryDate.getTime() - now.getTime()) /
+                      (1000 * 60 * 60 * 24)
+                  );
+                  const isExpired = daysRemaining < 0;
+                  const isWarning = daysRemaining <= 3 && daysRemaining >= 0;
+
+                  if (isExpired || isWarning) {
+                    return (
+                      <div
+                        className={`flex items-center space-x-2 rounded-md px-3 py-2 ${
+                          isExpired
+                            ? 'bg-red-600 bg-opacity-30'
+                            : 'bg-yellow-600 bg-opacity-30'
+                        }`}
+                      >
+                        <ExclamationTriangleIcon
+                          className={`h-5 w-5 flex-shrink-0 ${
+                            isExpired ? 'text-red-400' : 'text-yellow-400'
+                          }`}
+                        />
+                        <span
+                          className={`text-sm font-medium ${
+                            isExpired ? 'text-red-300' : 'text-yellow-300'
+                          }`}
+                        >
+                          {isExpired
+                            ? intl.formatMessage(messages.accountexpired)
+                            : intl.formatMessage(messages.expiresoon, {
+                                days: daysRemaining,
+                              })}
+                        </span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
             </div>
             <div className="p-1">
               <Menu.Item>

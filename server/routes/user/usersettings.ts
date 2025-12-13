@@ -144,6 +144,18 @@ userSettingsRoutes.post<
       user.tvQuotaLimit = req.body.tvQuotaLimit;
     }
 
+    // Update expiry date only if admin is managing another user (not owner)
+    if (
+      req.user?.hasPermission(Permission.MANAGE_USERS) &&
+      req.user?.id !== user.id &&
+      user.id !== 1 &&
+      req.body.expiryDate !== undefined
+    ) {
+      user.expiryDate = req.body.expiryDate
+        ? new Date(req.body.expiryDate)
+        : null;
+    }
+
     if (!user.settings) {
       user.settings = new UserSettings({
         user: req.user,

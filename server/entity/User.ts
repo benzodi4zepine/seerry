@@ -73,6 +73,9 @@ export class User {
   @Column({ type: 'date', nullable: true })
   public recoveryLinkExpirationDate?: Date | null;
 
+  @DbAwareColumn({ type: 'datetime', nullable: true })
+  public expiryDate?: Date | null;
+
   @Column({ type: 'integer', default: UserType.PLEX })
   public userType: UserType;
 

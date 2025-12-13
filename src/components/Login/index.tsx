@@ -31,6 +31,22 @@ const messages = defineMessages('components.Login', {
   orsigninwith: 'Or sign in with',
 });
 
+const DiscordIcon = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className="text-[#5865F2]"
+  >
+    <path
+      d="M20.317 4.369A19.791 19.791 0 0 0 15.892 3l-.213.426c2.18.544 3.182 1.326 4.242 2.309-.908-.46-1.814-.77-2.72-.972a13.26 13.26 0 0 0-6.196 0c-.907.202-1.813.512-2.72.972 1.06-.982 2.062-1.765 4.242-2.309L12.106 3a19.79 19.79 0 0 0-4.425 1.369C4.74 7.042 4.07 9.613 4.27 12.143c.925 1.39 2.276 2.445 3.698 3.285A10.3 10.3 0 0 0 9.4 16.38l.469-.982c-.863-.321-1.69-.744-2.454-1.26l.614-.384c1.663.774 3.46 1.171 5.261 1.171s3.598-.397 5.262-1.17l.613.383c-.764.516-1.591.939-2.454 1.26l.469.982c.982-.325 1.93-.754 2.848-1.253 1.422-.84 2.773-1.895 3.698-3.285.3-3.26-.55-5.773-3.349-7.774ZM9.97 13.798c-.82 0-1.488-.726-1.488-1.613 0-.886.657-1.614 1.488-1.614.83 0 1.498.728 1.488 1.614 0 .887-.657 1.613-1.488 1.613Zm4.06 0c-.82 0-1.488-.726-1.488-1.613 0-.886.657-1.614 1.488-1.614.83 0 1.498.728 1.488 1.614 0 .887-.657 1.613-1.488 1.613Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
 const Login = () => {
   const intl = useIntl();
   const router = useRouter();
@@ -121,20 +137,17 @@ const Login = () => {
       ) : (
         settings.currentSettings.localLogin &&
         (mediaServerLogin ? (
-          <Button
+          <button
             key="seerr"
             data-testid="seerr-login-button"
-            className="flex-1 bg-transparent"
+            className="flex-1 rounded-xl border border-[#2f3245] bg-[#0f111a] px-4 py-3 text-sm font-semibold text-white transition hover:border-[#5865f2] hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)] focus:outline-none focus:ring-2 focus:ring-[#5865f2]"
             onClick={() => setMediaServerLogin(false)}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/os_icon.svg"
-              alt={settings.currentSettings.applicationTitle}
-              className="mr-2 h-5"
-            />
-            <span>{settings.currentSettings.applicationTitle}</span>
-          </Button>
+            <span className="flex items-center justify-center gap-2">
+              <DiscordIcon />
+              <span>Login with Discord</span>
+            </span>
+          </button>
         ) : (
           <Button
             key="mediaserver"
@@ -150,7 +163,7 @@ const Login = () => {
   ].filter((o): o is JSX.Element => !!o);
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-gray-900 py-14">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#06060b] px-4 py-10">
       <PageTitle title={intl.formatMessage(messages.signin)} />
       <ImageFader
         backgroundImages={
@@ -159,19 +172,43 @@ const Login = () => {
           ) ?? []
         }
       />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(93,176,255,0.14),transparent_40%),radial-gradient(circle_at_80%_10%,rgba(177,89,255,0.14),transparent_35%),radial-gradient(circle_at_50%_80%,rgba(37,222,164,0.08),transparent_35%),linear-gradient(180deg,#06060b_0%,#06060b_100%)]" />
+
       <div className="absolute top-4 right-4 z-50">
         <LanguagePicker />
       </div>
-      <div className="relative z-40 mt-10 flex flex-col items-center px-4 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="relative h-48 w-full max-w-full">
-          <Image src="/logo_stacked.svg" alt="Logo" fill />
-        </div>
-      </div>
-      <div className="relative z-50 mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div
-          className="bg-gray-800 bg-opacity-50 shadow sm:rounded-lg"
-          style={{ backdropFilter: 'blur(5px)' }}
+      <div className="absolute left-4 bottom-4 z-50 flex items-center gap-3 text-xs text-slate-400">
+        <a
+          href="https://apexnova.live/wiki"
+          className="underline decoration-slate-500 decoration-dotted underline-offset-4 transition hover:text-white"
         >
+          Apex Nova Wiki
+        </a>
+        <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-slate-500">
+          v1
+        </span>
+      </div>
+
+      <div className="relative z-40 mb-8 flex flex-col items-center text-center sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="relative h-16 w-28">
+          <Image
+            src="/logo_full.png"
+            alt="Logo"
+            fill
+            style={{ objectFit: 'contain' }}
+            sizes="112px"
+          />
+        </div>
+        <h1 className="mt-3 text-3xl font-semibold text-white">
+          Apex Nova Access
+        </h1>
+        <p className="mt-2 max-w-md text-sm text-slate-400">
+          Secure sign-in with media server or Discord. No fluff—just your queue.
+        </p>
+      </div>
+
+      <div className="relative z-50 w-full max-w-xl sm:max-w-md">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-[0_35px_90px_rgba(0,0,0,0.7)] backdrop-blur">
           <>
             <Transition
               as="div"
@@ -183,20 +220,14 @@ const Login = () => {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <div className="mb-4 rounded-md bg-red-600 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <XCircleIcon className="h-5 w-5 text-red-300" />
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-300">
-                      {error}
-                    </h3>
-                  </div>
+              <div className="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-red-100">
+                <div className="flex items-center space-x-2">
+                  <XCircleIcon className="h-5 w-5" />
+                  <h3 className="text-sm font-semibold">{error}</h3>
                 </div>
               </div>
             </Transition>
-            <div className="px-10 py-8">
+            <div className="px-8 py-8 sm:px-10">
               <SwitchTransition mode="out-in">
                 <CSSTransition
                   key={mediaServerLogin ? 'ms' : 'local'}
@@ -221,7 +252,7 @@ const Login = () => {
                     exitActive: 'transition-opacity duration-0 opacity-0',
                   }}
                 >
-                  <div ref={loginRef} className="button-container">
+                  <div ref={loginRef} className="button-container space-y-4">
                     {isJellyfin &&
                     (mediaServerLogin ||
                       !settings.currentSettings.localLogin) ? (
@@ -241,14 +272,14 @@ const Login = () => {
               {additionalLoginOptions.length > 0 &&
                 (loginFormVisible ? (
                   <div className="flex items-center py-5">
-                    <div className="flex-grow border-t border-gray-600"></div>
-                    <span className="mx-2 flex-shrink text-sm text-gray-400">
+                    <div className="flex-grow border-t border-white/10"></div>
+                    <span className="mx-2 flex-shrink text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
                       {intl.formatMessage(messages.orsigninwith)}
                     </span>
-                    <div className="flex-grow border-t border-gray-600"></div>
+                    <div className="flex-grow border-t border-white/10"></div>
                   </div>
                 ) : (
-                  <h2 className="mb-6 text-center text-lg font-bold text-neutral-200">
+                  <h2 className="mb-6 text-center text-lg font-semibold text-neutral-200">
                     {intl.formatMessage(messages.signinheader)}
                   </h2>
                 ))}

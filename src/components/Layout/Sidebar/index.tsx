@@ -1,6 +1,5 @@
 import Badge from '@app/components/Common/Badge';
 import UserWarnings from '@app/components/Layout/UserWarnings';
-import VersionStatus from '@app/components/Layout/VersionStatus';
 import useClickOutside from '@app/hooks/useClickOutside';
 import { Permission, useUser } from '@app/hooks/useUser';
 import defineMessages from '@app/utils/defineMessages';
@@ -456,12 +455,6 @@ const Sidebar = ({
                     <div className="px-2">
                       <UserWarnings onClick={() => setClosed()} />
                     </div>
-
-                    {hasPermission(Permission.ADMIN) && (
-                      <div className="px-2">
-                        <VersionStatus onClick={() => setClosed()} />
-                      </div>
-                    )}
                   </div>
                 </div>
                 <div className="w-14 flex-shrink-0">
@@ -678,14 +671,29 @@ const Sidebar = ({
                   })}
                 </div>
               </nav>
+              <div className="mt-4 border-t border-[#12121a] px-4 pb-6 pt-4 text-[12px] text-slate-400">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  Need Help?
+                </div>
+                <div className="mt-1 space-y-1">
+                  <Link
+                    href="https://apexnova.live"
+                    className="block hover:text-white"
+                  >
+                    Apex Nova Dashboard
+                  </Link>
+                  <Link
+                    href="https://apexnova.live/wiki"
+                    className="block hover:text-white"
+                  >
+                    Apex Nova Wiki
+                  </Link>
+                </div>
+                <div className="mt-2 text-[11px] text-slate-600">v1</div>
+              </div>
               <div className="px-2">
                 <UserWarnings />
               </div>
-              {hasPermission(Permission.ADMIN) && (
-                <div className="px-2">
-                  <VersionStatus />
-                </div>
-              )}
             </div>
           </div>
         </div>

@@ -39,6 +39,13 @@ const messages = defineMessages('components.Settings.SettingsUsers', {
   tvRequestLimitLabel: 'Global Series Request Limit',
   defaultPermissions: 'Default Permissions',
   defaultPermissionsTip: 'Initial permissions assigned to new users',
+  wizarrTitle: 'Wizarr Accounts',
+  wizarrDescription:
+    'Fetched directly from Wizarr. Uses Jellyfin usernames to match. Read-only.',
+  wizarrUnavailable: 'Wizarr is not configured or unreachable.',
+  wizarrUsername: 'Username',
+  wizarrEmail: 'Email',
+  wizarrExpires: 'Expires',
 });
 
 const SettingsUsers = () => {
@@ -50,6 +57,13 @@ const SettingsUsers = () => {
     mutate: revalidate,
   } = useSWR<MainSettings>('/api/v1/settings/main');
   const settings = useSettings();
+  const {
+    data: wizarrData,
+    error: wizarrError,
+    isValidating: wizarrLoading,
+  } = useSWR<{
+    users: { username: string; email?: string; expires?: string | null }[];
+  }>('/api/v1/wizarr/users');
 
   const schema = yup
     .object()
@@ -304,6 +318,52 @@ const SettingsUsers = () => {
             );
           }}
         </Formik>
+      </div>
+      <div className="section mt-8">
+        <h3 className="heading">{intl.formatMessage(messages.wizarrTitle)}</h3>
+        <p className="description">
+          {intl.formatMessage(messages.wizarrDescription)}
+        </p>
+        <div className="mt-4 overflow-hidden rounded-xl border border-[#1a1a1f] bg-[#0c0c10]">
+          <div className="grid grid-cols-3 gap-4 border-b border-[#1a1a1f] px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
+            <span>{intl.formatMessage(messages.wizarrUsername)}</span>
+            <span>{intl.formatMessage(messages.wizarrEmail)}</span>
+            <span>{intl.formatMessage(messages.wizarrExpires)}</span>
+          </div>
+          {wizarrLoading && (
+            <div className="flex items-center justify-center px-4 py-6 text-slate-400">
+              <LoadingSpinner />
+            </div>
+          )}
+          {wizarrError && (
+            <div className="px-4 py-4 text-sm text-red-400">
+              {intl.formatMessage(messages.wizarrUnavailable)}
+            </div>
+          )}
+          {wizarrData?.users?.length
+            ? wizarrData.users.map((user, idx) => (
+                <div
+                  key={`wizarr-${user.username}-${idx}`}
+                  className="grid grid-cols-3 gap-4 border-t border-[#0f0f14] px-4 py-3 text-sm text-slate-200"
+                >
+                  <span className="font-semibold text-white">
+                    {user.username}
+                  </span>
+                  <span className="text-slate-400">
+                    {user.email && user.email !== 'empty' ? user.email : '—'}
+                  </span>
+                  <span className="text-slate-400">
+                    {user.expires ? user.expires : 'No expiry'}
+                  </span>
+                </div>
+              ))
+            : !wizarrLoading &&
+              !wizarrError && (
+                <div className="px-4 py-4 text-sm text-slate-400">
+                  No users.
+                </div>
+              )}
+        </div>
       </div>
     </>
   );

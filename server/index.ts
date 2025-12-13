@@ -37,12 +37,36 @@ import express from 'express';
 import * as OpenApiValidator from 'express-openapi-validator';
 import type { Store } from 'express-session';
 import session from 'express-session';
+import fs from 'fs';
 import http from 'http';
 import https from 'https';
 import next from 'next';
 import path from 'path';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
+
+const loadEnvFile = (envPath: string) => {
+  if (!fs.existsSync(envPath)) return;
+  const contents = fs.readFileSync(envPath, 'utf8');
+  contents
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+    .forEach((line) => {
+      const eqIndex = line.indexOf('=');
+      if (eqIndex === -1) return;
+      const key = line.slice(0, eqIndex).trim();
+      const value = line.slice(eqIndex + 1).trim();
+      if (key && !(key in process.env)) {
+        process.env[key] = value;
+      }
+    });
+};
+
+const envLocalPath = path.join(process.cwd(), '.env.local');
+const envPath = path.join(process.cwd(), '.env');
+loadEnvFile(envLocalPath);
+loadEnvFile(envPath);
 
 const API_SPEC_PATH = path.join(__dirname, '../seerr-api.yml');
 

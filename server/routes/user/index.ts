@@ -161,6 +161,7 @@ router.post(
         permissions: settings.main.defaultPermissions,
         plexToken: '',
         userType: UserType.LOCAL,
+        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
       });
 
       if (passedExplicitPassword) {
@@ -451,6 +452,13 @@ router.put<{ id: string }>(
         username: req.body.username,
         permissions: req.body.permissions,
       });
+
+      // Allow admins to update expiry date (except for owner user)
+      if (req.body.expiryDate !== undefined && user.id !== 1) {
+        user.expiryDate = req.body.expiryDate
+          ? new Date(req.body.expiryDate)
+          : null;
+      }
 
       await userRepository.save(user);
 

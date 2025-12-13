@@ -73,6 +73,12 @@ const messages = defineMessages(
     plexwatchlistsyncseries: 'Auto-Request Series',
     plexwatchlistsyncseriestip:
       'Automatically request series on your <PlexWatchlistSupportLink>Plex Watchlist</PlexWatchlistSupportLink>',
+    accountExpiry: 'Account Expiry',
+    accountExpiryTip:
+      'Set an expiration date for this user account. The account will be automatically disabled when expired.',
+    expiryDate: 'Expiry Date',
+    noExpiry: 'No Expiry (Unlimited Access)',
+    removeExpiry: 'Remove Expiry Date',
   }
 );
 
@@ -82,6 +88,7 @@ const UserGeneralSettings = () => {
   const { locale, setLocale } = useLocale();
   const [movieQuotaEnabled, setMovieQuotaEnabled] = useState(false);
   const [tvQuotaEnabled, setTvQuotaEnabled] = useState(false);
+  const [expiryEnabled, setExpiryEnabled] = useState(false);
   const router = useRouter();
   const {
     user,
@@ -131,7 +138,8 @@ const UserGeneralSettings = () => {
     setTvQuotaEnabled(
       data?.tvQuotaLimit != undefined && data?.tvQuotaDays != undefined
     );
-  }, [data]);
+    setExpiryEnabled(user?.expiryDate != undefined);
+  }, [data, user]);
 
   if (!data && !error) {
     return <LoadingSpinner />;
@@ -169,6 +177,9 @@ const UserGeneralSettings = () => {
           tvQuotaDays: data?.tvQuotaDays,
           watchlistSyncMovies: data?.watchlistSyncMovies,
           watchlistSyncTv: data?.watchlistSyncTv,
+          expiryDate: user?.expiryDate
+            ? new Date(user.expiryDate).toISOString().slice(0, 16)
+            : '',
         }}
         validationSchema={UserGeneralSettingsSchema}
         enableReinitialize
@@ -191,6 +202,8 @@ const UserGeneralSettings = () => {
               tvQuotaDays: tvQuotaEnabled ? values.tvQuotaDays : null,
               watchlistSyncMovies: values.watchlistSyncMovies,
               watchlistSyncTv: values.watchlistSyncTv,
+              expiryDate:
+                expiryEnabled && values.expiryDate ? values.expiryDate : null,
             });
 
             if (currentUser?.id === user?.id && setLocale) {
@@ -290,6 +303,51 @@ const UserGeneralSettings = () => {
                   </div>
                 </div>
               </div>
+              {currentHasPermission(Permission.MANAGE_USERS) &&
+                currentUser?.id !== user?.id &&
+                user?.id !== 1 && (
+                  <div className="form-row">
+                    <label htmlFor="expiryDate" className="text-label">
+                      <span>{intl.formatMessage(messages.accountExpiry)}</span>
+                      <span className="label-tip">
+                        {intl.formatMessage(messages.accountExpiryTip)}
+                      </span>
+                    </label>
+                    <div className="form-input-area">
+                      <div className="flex flex-col">
+                        <div className="mb-4 flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={expiryEnabled}
+                            onChange={() => {
+                              setExpiryEnabled((s) => !s);
+                              if (expiryEnabled) {
+                                setFieldValue('expiryDate', '');
+                              }
+                            }}
+                          />
+                          <span className="ml-2 text-gray-300">
+                            {intl.formatMessage(messages.expiryDate)}
+                          </span>
+                        </div>
+                        {expiryEnabled ? (
+                          <div className="form-input-field">
+                            <Field
+                              id="expiryDate"
+                              name="expiryDate"
+                              type="datetime-local"
+                              className="w-full rounded-md border border-gray-500 bg-gray-700 px-3 py-2 text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-sm text-gray-400">
+                            {intl.formatMessage(messages.noExpiry)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               <div className="form-row">
                 <label htmlFor="displayName" className="text-label">
                   {intl.formatMessage(messages.displayName)}

@@ -42,6 +42,7 @@ import searchRoutes from './search';
 import serviceRoutes from './service';
 import tvRoutes from './tv';
 import user from './user';
+import wizarrRoutes from './wizarr';
 
 const router = Router();
 
@@ -152,6 +153,7 @@ router.use('/search', isAuthenticated(), searchRoutes);
 router.use('/discover', isAuthenticated(), discoverRoutes);
 router.use('/request', isAuthenticated(), requestRoutes);
 router.use('/ebooks', isAuthenticated(), ebooksRoutes);
+router.use('/wizarr', isAuthenticated(Permission.ADMIN), wizarrRoutes);
 router.use('/watchlist', isAuthenticated(), watchlistRoutes);
 router.use('/blacklist', isAuthenticated(), blacklistRoutes);
 router.use('/movie', isAuthenticated(), movieRoutes);

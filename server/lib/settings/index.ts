@@ -346,7 +346,9 @@ export type JobId =
   | 'jellyfin-full-scan'
   | 'image-cache-cleanup'
   | 'availability-sync'
-  | 'process-blacklisted-tags';
+  | 'process-blacklisted-tags'
+  | 'user-expiry-warnings'
+  | 'user-expiry-disable';
 
 export interface AllSettings {
   clientId: string;
@@ -572,6 +574,12 @@ class Settings {
         },
         'process-blacklisted-tags': {
           schedule: '0 30 1 */7 * *',
+        },
+        'user-expiry-warnings': {
+          schedule: '0 0 9 * * *', // Daily at 9:00 AM
+        },
+        'user-expiry-disable': {
+          schedule: '0 0 * * * *', // Every hour
         },
       },
       network: {

@@ -145,22 +145,30 @@ const CoreApp: Omit<NextAppComponentType, 'origGetInitialProps'> = ({
     };
 
     const handleBadgeUpdate = () => {
-      if ('setAppBadge' in newNavigator) {
-        if (
-          !router.pathname.match(/(login|setup|resetpassword)/) &&
-          hasPermission(Permission.ADMIN)
-        ) {
-          requestsCount().then((data) => {
-            if (data.pending > 0) {
-              newNavigator.setAppBadge?.(data.pending);
-            } else {
-              newNavigator.clearAppBadge?.();
-            }
-          });
-        } else {
-          newNavigator.clearAppBadge?.();
-        }
+      if (!('setAppBadge' in newNavigator)) {
+        return;
       }
+
+      if (
+        router.pathname.match(/(login|setup|resetpassword)/) ||
+        !hasPermission(Permission.ADMIN) ||
+        !user
+      ) {
+        newNavigator.clearAppBadge?.();
+        return;
+      }
+
+      requestsCount()
+        .then((data) => {
+          if (data.pending > 0) {
+            newNavigator.setAppBadge?.(data.pending);
+          } else {
+            newNavigator.clearAppBadge?.();
+          }
+        })
+        .catch(() => {
+          newNavigator.clearAppBadge?.();
+        });
     };
 
     handleBadgeUpdate();
@@ -170,7 +178,7 @@ const CoreApp: Omit<NextAppComponentType, 'origGetInitialProps'> = ({
     return () => {
       window.removeEventListener('focus', handleBadgeUpdate);
     };
-  }, [hasPermission, router.pathname]);
+  }, [hasPermission, router.pathname, user]);
 
   if (router.pathname.match(/(login|setup|resetpassword)/)) {
     component = <Component {...pageProps} />;

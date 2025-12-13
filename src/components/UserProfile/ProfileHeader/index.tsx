@@ -12,6 +12,9 @@ const messages = defineMessages('components.UserProfile.ProfileHeader', {
   profile: 'View Profile',
   joindate: 'Joined {joindate}',
   userid: 'User ID: {userid}',
+  expires: 'Expires {date}',
+  expired: 'Expired {date}',
+  noexpiry: 'No Expiry',
 });
 
 interface ProfileHeaderProps {
@@ -32,6 +35,41 @@ const ProfileHeader = ({ user, isSettingsPage }: ProfileHeaderProps) => {
       }),
     }),
   ];
+
+  // Add expiry date display
+  if (user.expiryDate) {
+    const now = new Date();
+    const expiryDate = new Date(user.expiryDate);
+    const daysRemaining = Math.ceil(
+      (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const isExpired = daysRemaining < 0;
+    const isWarning = daysRemaining <= 3 && daysRemaining >= 0;
+
+    const expiryText = isExpired
+      ? intl.formatMessage(messages.expired, {
+          date: intl.formatDate(expiryDate, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+        })
+      : intl.formatMessage(messages.expires, {
+          date: intl.formatDate(expiryDate, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+        });
+
+    const colorClass = isExpired
+      ? 'text-red-400'
+      : isWarning
+      ? 'text-yellow-400'
+      : '';
+
+    subtextItems.push(<span className={colorClass}>{expiryText}</span>);
+  }
 
   if (hasPermission(Permission.MANAGE_REQUESTS)) {
     subtextItems.push(intl.formatMessage(messages.userid, { userid: user.id }));

@@ -3,6 +3,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.local
+    environment:
+      - WIZARR_URL=https://wizarr.apexnova.live
+      - WIZARR_TOKEN=Gq71lsOIjXF6iiyvJ6l7BBuoF5GocMSB3NXyt_h5VqE
+      - WIZARR_HEADER=x-api-key
     ports:
       - 5055:5055
     volumes:

@@ -13,6 +13,7 @@ import { radarrScanner } from '@server/lib/scanners/radarr';
 import { sonarrScanner } from '@server/lib/scanners/sonarr';
 import type { JobId } from '@server/lib/settings';
 import { getSettings } from '@server/lib/settings';
+import userExpiryManager from '@server/lib/userExpiryManager';
 import watchlistSync from '@server/lib/watchlistsync';
 import logger from '@server/logger';
 import schedule from 'node-schedule';
@@ -252,6 +253,36 @@ export const startJobs = (): void => {
     }),
     running: () => blacklistedTagsProcessor.status().running,
     cancelFn: () => blacklistedTagsProcessor.cancel(),
+  });
+
+  // Check for users expiring in 3 days and send warnings (daily at 9:00 AM)
+  scheduledJobs.push({
+    id: 'user-expiry-warnings',
+    name: 'User Expiry Warnings',
+    type: 'command',
+    interval: 'hours',
+    cronSchedule: jobs['user-expiry-warnings'].schedule,
+    job: schedule.scheduleJob(jobs['user-expiry-warnings'].schedule, () => {
+      logger.info('Starting scheduled job: User Expiry Warnings', {
+        label: 'Jobs',
+      });
+      userExpiryManager.checkExpiringUsers();
+    }),
+  });
+
+  // Disable expired users (runs hourly)
+  scheduledJobs.push({
+    id: 'user-expiry-disable',
+    name: 'User Expiry Disable',
+    type: 'command',
+    interval: 'hours',
+    cronSchedule: jobs['user-expiry-disable'].schedule,
+    job: schedule.scheduleJob(jobs['user-expiry-disable'].schedule, () => {
+      logger.info('Starting scheduled job: User Expiry Disable', {
+        label: 'Jobs',
+      });
+      userExpiryManager.disableExpiredUsers();
+    }),
   });
 
   logger.info('Scheduled jobs loaded', { label: 'Jobs' });

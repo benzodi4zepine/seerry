@@ -49,6 +49,10 @@ const messages = defineMessages('components.UserList', {
   accounttype: 'Type',
   role: 'Role',
   created: 'Joined',
+  expiry: 'Expiry',
+  expires: 'Expires {date}',
+  expired: 'Expired',
+  noexpiry: 'No Expiry',
   bulkedit: 'Bulk Edit',
   owner: 'Owner',
   admin: 'Admin',
@@ -594,6 +598,7 @@ const UserList = () => {
             <Table.TH>{intl.formatMessage(messages.accounttype)}</Table.TH>
             <Table.TH>{intl.formatMessage(messages.role)}</Table.TH>
             <Table.TH>{intl.formatMessage(messages.created)}</Table.TH>
+            <Table.TH>{intl.formatMessage(messages.expiry)}</Table.TH>
             <Table.TH className="text-right">
               {(data.results ?? []).length > 1 && (
                 <Button
@@ -715,6 +720,44 @@ const UserList = () => {
                   day: 'numeric',
                 })}
               </Table.TD>
+              <Table.TD>
+                {user.expiryDate ? (
+                  (() => {
+                    const now = new Date();
+                    const expiryDate = new Date(user.expiryDate);
+                    const daysRemaining = Math.ceil(
+                      (expiryDate.getTime() - now.getTime()) /
+                        (1000 * 60 * 60 * 24)
+                    );
+                    const isExpired = daysRemaining < 0;
+                    const isWarning = daysRemaining <= 3 && daysRemaining >= 0;
+
+                    const colorClass = isExpired
+                      ? 'text-red-400'
+                      : isWarning
+                      ? 'text-yellow-400'
+                      : '';
+
+                    return (
+                      <span className={colorClass}>
+                        {isExpired
+                          ? intl.formatMessage(messages.expired)
+                          : intl.formatMessage(messages.expires, {
+                              date: intl.formatDate(expiryDate, {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                              }),
+                            })}
+                      </span>
+                    );
+                  })()
+                ) : (
+                  <span className="text-gray-400">
+                    {intl.formatMessage(messages.noexpiry)}
+                  </span>
+                )}
+              </Table.TD>
               <Table.TD alignText="right">
                 <Button
                   buttonType="warning"
@@ -744,7 +787,7 @@ const UserList = () => {
             </tr>
           ))}
           <tr className="bg-gray-700">
-            <Table.TD colSpan={8} noPadding>
+            <Table.TD colSpan={9} noPadding>
               <nav
                 className="flex w-screen flex-col items-center space-x-4 space-y-3 px-6 py-3 sm:flex-row sm:space-y-0 lg:w-full"
                 aria-label="Pagination"
