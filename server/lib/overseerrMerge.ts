@@ -115,12 +115,12 @@ const checkOverseerrMerge = async (): Promise<boolean> => {
   // Set media server type to Plex (default for Overseerr)
   settings.main.mediaServerType = MediaServerType.PLEX;
 
-  // Replace default Overseerr values with Seerr values
+  // Replace default Overseerr values with Apex Nova values
   if (settings.main.applicationTitle === 'Overseerr') {
-    settings.main.applicationTitle = 'Seerr';
+    settings.main.applicationTitle = 'Apex Nova';
   }
   if (settings.notifications.agents.email.options.senderName === 'Overseerr') {
-    settings.notifications.agents.email.options.senderName = 'Seerr';
+    settings.notifications.agents.email.options.senderName = 'Apex Nova';
   }
 
   // Save the updated settings
