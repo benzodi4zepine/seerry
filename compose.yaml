@@ -2,7 +2,7 @@ services:
   seerr:
     build:
       context: .
-      dockerfile: Dockerfile.local
+      dockerfile: Dockerfile
     environment:
       - WIZARR_URL=https://wizarr.apexnova.live
       - WIZARR_TOKEN=Gq71lsOIjXF6iiyvJ6l7BBuoF5GocMSB3NXyt_h5VqE
