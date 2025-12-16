@@ -5,12 +5,11 @@ services:
       context: .
       dockerfile: Dockerfile.local
     environment:
-      NODE_ENV: "production"
-      NODE_OPTIONS: "--max-old-space-size=8192"
-      WIZARR_URL: "https://wizarr.apexnova.live"
-      WIZARR_TOKEN: "Gq71lsOIjXF6iiyvJ6l7BBuoF5GocMSB3NXyt_h5VqE"
-      WIZARR_HEADER: "x-api-key"
-
+      - WIZARR_URL=https://wizarr.apexnova.live
+      - WIZARR_TOKEN=Gq71lsOIjXF6iiyvJ6l7BBuoF5GocMSB3NXyt_h5VqE
+      - WIZARR_HEADER=x-api-key
+      - JELLYFIN_ADMIN_API_KEY=5fca636b59304965aa36d3e7907ecc61
+      - JELLYFIN_TRIAL_DURATION_DAYS=7
     # Production run (no nodemon/ts-node)
     command: sh -lc "pnpm install --frozen-lockfile && pnpm build && pnpm start"
 
