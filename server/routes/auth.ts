@@ -638,7 +638,8 @@ authRoutes.post('/jellyfin/signup', async (req, res, next) => {
   if (!/^[a-zA-Z0-9_-]+$/.test(body.username)) {
     return next({
       status: 400,
-      message: 'Username can only contain letters, numbers, hyphens, and underscores',
+      message:
+        'Username can only contain letters, numbers, hyphens, and underscores',
     });
   }
 
@@ -677,34 +678,54 @@ authRoutes.post('/jellyfin/signup', async (req, res, next) => {
       body.password
     );
 
-    // Set user policy - full library access but no downloads
-    await jellyfinAdmin.updateUserPolicy(jellyfinUser.Id, {
-      IsDisabled: false,
-      EnableAllFolders: true,
-      EnableContentDownloading: false,
-      EnableMediaPlayback: true,
-      EnableAudioPlaybackTranscoding: true,
-      EnableVideoPlaybackTranscoding: true,
-      EnablePlaybackRemuxing: true,
-      EnableRemoteAccess: true,
-      EnableLiveTvAccess: true,
-      EnableUserPreferenceAccess: true,
-      EnableAllDevices: true,
-      EnableAllChannels: true,
-      IsAdministrator: false,
-      EnableContentDeletion: false,
-      EnableSubtitleManagement: false,
-      EnableLyricManagement: false,
-      EnableCollectionManagement: false,
-      EnablePublicSharing: false,
-    });
+    // Try to set user policy - full library access but no downloads
+    // This is non-blocking - if it fails, the user is still created
+    try {
+      await jellyfinAdmin.updateUserPolicy(jellyfinUser.Id, {
+        IsDisabled: false,
+        EnableAllFolders: true,
+        EnableContentDownloading: false,
+        EnableMediaPlayback: true,
+        EnableAudioPlaybackTranscoding: true,
+        EnableVideoPlaybackTranscoding: true,
+        EnablePlaybackRemuxing: true,
+        EnableRemoteAccess: true,
+        EnableLiveTvAccess: true,
+        EnableUserPreferenceAccess: true,
+        EnableAllDevices: true,
+        EnableAllChannels: true,
+        IsAdministrator: false,
+        EnableContentDeletion: false,
+        EnableSubtitleManagement: false,
+        EnableLyricManagement: false,
+        EnableCollectionManagement: false,
+        EnablePublicSharing: false,
+      });
+
+      logger.info(`Set user policy for trial account ${body.username}`, {
+        label: 'Auth',
+        userId: jellyfinUser.Id,
+      });
+    } catch (policyError) {
+      logger.warn(
+        `Failed to set user policy for trial account ${body.username}, user created with default Jellyfin permissions`,
+        {
+          label: 'Auth',
+          errorMessage: policyError.message,
+          userId: jellyfinUser.Id,
+        }
+      );
+      // Continue anyway - user is created, just with default permissions
+    }
 
     // Calculate expiry date (7 days from now)
     const trialDays = Number(process.env.JELLYFIN_TRIAL_DURATION_DAYS) || 7;
     const expiryDate = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
 
     // Create user in Seerr
-    const deviceId = Buffer.from(`BOT_seerr_${body.username}`).toString('base64');
+    const deviceId = Buffer.from(`BOT_seerr_${body.username}`).toString(
+      'base64'
+    );
     const user = new User({
       email: body.email || `${body.username}@trial.local`,
       jellyfinUsername: body.username,
@@ -720,7 +741,9 @@ authRoutes.post('/jellyfin/signup', async (req, res, next) => {
     await userRepository.save(user);
 
     logger.info(
-      `Created trial account for user ${body.username}, expires ${expiryDate.toISOString()}`,
+      `Created trial account for user ${
+        body.username
+      }, expires ${expiryDate.toISOString()}`,
       {
         label: 'Auth',
         ip: req.ip,
@@ -1047,4 +1070,3 @@ authRoutes.post('/reset-password/:guid', async (req, res, next) => {
 });
 
 export default authRoutes;
-
