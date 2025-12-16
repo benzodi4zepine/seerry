@@ -172,23 +172,22 @@ class JellyfinAPI extends ExternalAPI {
         : Buffer.from('BOT_seerr').toString('base64');
 
     let authHeaderVal: string;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+
     if (authToken) {
       authHeaderVal = `MediaBrowser Client="Seerr", Device="Seerr", DeviceId="${safeDeviceId}", Version="${getAppVersion()}", Token="${authToken}"`;
+      headers['Authorization'] = authHeaderVal;
+      // Also add X-Emby-Authorization for API key compatibility with admin endpoints
+      headers['X-Emby-Authorization'] = authHeaderVal;
     } else {
       authHeaderVal = `MediaBrowser Client="Seerr", Device="Seerr", DeviceId="${safeDeviceId}", Version="${getAppVersion()}"`;
+      headers['Authorization'] = authHeaderVal;
     }
 
-    super(
-      jellyfinHost,
-      {},
-      {
-        headers: {
-          Authorization: authHeaderVal,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-      }
-    );
+    super(jellyfinHost, {}, { headers });
 
     this.mediaServerType = settings.main.mediaServerType;
   }
@@ -518,21 +517,16 @@ class JellyfinAPI extends ExternalAPI {
 
       return response;
     } catch (e) {
-      logger.error(
-        `Failed to create Jellyfin user ${username}: ${e.message}`,
-        { label: 'Jellyfin API', error: e.response?.status }
-      );
+      logger.error(`Failed to create Jellyfin user ${username}: ${e.message}`, {
+        label: 'Jellyfin API',
+        error: e.response?.status,
+      });
 
-      throw new ApiError(
-        e.response?.status ?? 500,
-        ApiErrorCode.Unknown
-      );
+      throw new ApiError(e.response?.status ?? 500, ApiErrorCode.Unknown);
     }
   }
 
-  public async getUserPolicy(
-    userId: string
-  ): Promise<JellyfinUserPolicy> {
+  public async getUserPolicy(userId: string): Promise<JellyfinUserPolicy> {
     try {
       const policy = await this.get<JellyfinUserPolicy>(
         `/Users/${userId}/Policy`
@@ -572,10 +566,7 @@ class JellyfinAPI extends ExternalAPI {
         { label: 'Jellyfin API', error: e.response?.status }
       );
 
-      throw new ApiError(
-        e.response?.status ?? 500,
-        ApiErrorCode.Unknown
-      );
+      throw new ApiError(e.response?.status ?? 500, ApiErrorCode.Unknown);
     }
   }
 
@@ -592,10 +583,7 @@ class JellyfinAPI extends ExternalAPI {
         error: e.response?.status,
       });
 
-      throw new ApiError(
-        e.response?.status ?? 500,
-        ApiErrorCode.Unknown
-      );
+      throw new ApiError(e.response?.status ?? 500, ApiErrorCode.Unknown);
     }
   }
 
@@ -612,10 +600,7 @@ class JellyfinAPI extends ExternalAPI {
         error: e.response?.status,
       });
 
-      throw new ApiError(
-        e.response?.status ?? 500,
-        ApiErrorCode.Unknown
-      );
+      throw new ApiError(e.response?.status ?? 500, ApiErrorCode.Unknown);
     }
   }
 }
