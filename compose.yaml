@@ -9,6 +9,10 @@ services:
       - WIZARR_HEADER=x-api-key
       - JELLYFIN_ADMIN_API_KEY=5fca636b59304965aa36d3e7907ecc61
       - JELLYFIN_TRIAL_DURATION_DAYS=7
+      - CALIBRE_WEB_URL=https://calibre-web.apexnova.live
+      - CALIBRE_WEB_USER=blur
+      - CALIBRE_WEB_PASS=Blur@12345
+      - ANNAS_ARCHIVE_API_KEY=511be2afddmshd00724f1c1d163ep111725jsn73ae5ff92fcb
     ports:
       - 5055:5055
     volumes:
