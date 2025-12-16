@@ -21,9 +21,7 @@ export default class CalibreWeb {
   }
 
   public async search(query: string): Promise<CalibreBook[]> {
-    const url = `${this.baseUrl}/opds/v1.2/search?q=${encodeURIComponent(
-      query
-    )}`;
+    const url = `${this.baseUrl}/opds/search?q=${encodeURIComponent(query)}`;
 
     const response = await axios.get(url, {
       auth:

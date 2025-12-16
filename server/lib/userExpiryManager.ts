@@ -1,8 +1,12 @@
+import JellyfinAPI from '@server/api/jellyfin';
+import { MediaServerType } from '@server/constants/server';
+import { UserType } from '@server/constants/user';
 import { getRepository } from '@server/datasource';
 import { User } from '@server/entity/User';
 import PreparedEmail from '@server/lib/email';
 import { getSettings } from '@server/lib/settings';
 import logger from '@server/logger';
+import { getHostname } from '@server/utils/getHostname';
 import path from 'path';
 import { Between, LessThan } from 'typeorm';
 
@@ -139,6 +143,56 @@ class UserExpiryManager {
             expiryDate: user.expiryDate,
           });
 
+          // Disable in Jellyfin if it's a Jellyfin user
+          const settings = getSettings();
+          if (
+            (user.userType === UserType.JELLYFIN ||
+              user.userType === UserType.EMBY) &&
+            user.jellyfinUserId &&
+            (settings.main.mediaServerType === MediaServerType.JELLYFIN ||
+              settings.main.mediaServerType === MediaServerType.EMBY)
+          ) {
+            try {
+              const adminApiKey = process.env.JELLYFIN_ADMIN_API_KEY;
+              if (adminApiKey) {
+                const hostname = getHostname();
+                const jellyfinAdmin = new JellyfinAPI(
+                  hostname,
+                  adminApiKey,
+                  'BOT_seerr'
+                );
+
+                await jellyfinAdmin.disableUser(user.jellyfinUserId);
+
+                logger.info(
+                  `Disabled Jellyfin account for user ${user.email}`,
+                  {
+                    label: 'User Expiry Manager',
+                    userId: user.id,
+                    jellyfinUserId: user.jellyfinUserId,
+                  }
+                );
+              } else {
+                logger.warn(
+                  'JELLYFIN_ADMIN_API_KEY not configured, skipping Jellyfin account disable',
+                  {
+                    label: 'User Expiry Manager',
+                    userId: user.id,
+                  }
+                );
+              }
+            } catch (jellyfinError) {
+              logger.error('Failed to disable Jellyfin account', {
+                label: 'User Expiry Manager',
+                userId: user.id,
+                jellyfinUserId: user.jellyfinUserId,
+                errorMessage: jellyfinError.message,
+              });
+              // Continue to disable in Seerr even if Jellyfin disable fails
+            }
+          }
+
+          // Disable in Seerr
           user.permissions = 0;
           await userRepository.save(user);
 

@@ -1,3 +1,4 @@
+import CalibreWeb from '@server/api/calibreWeb';
 import PlexTvAPI from '@server/api/plextv';
 import type { SortOptions } from '@server/api/themoviedb';
 import TheMovieDb from '@server/api/themoviedb';
@@ -916,5 +917,39 @@ discoverRoutes.get<Record<string, unknown>, WatchlistResponse>(
     });
   }
 );
+
+discoverRoutes.get('/ebooks', async (req, res, next) => {
+  try {
+    const page = Number(req.query.page) || 1;
+    const query = (req.query.q as string) || '';
+
+    const baseUrl =
+      process.env.CALIBRE_WEB_URL ?? 'https://calibre-web.apexnova.live';
+    const username = process.env.CALIBRE_WEB_USER ?? 'blur';
+    const password = process.env.CALIBRE_WEB_PASS ?? 'Blur@12345';
+
+    if (!baseUrl) {
+      return next({ status: 503, message: 'Calibre-Web URL not configured' });
+    }
+
+    const client = new CalibreWeb({
+      baseUrl,
+      username,
+      password,
+    });
+
+    const results = await client.search(query);
+
+    return res.status(200).json({
+      page,
+      totalPages: 1,
+      totalResults: results.length,
+      results,
+    });
+  } catch (e) {
+    logger.error('Failed to fetch ebooks', { error: e });
+    return next({ status: 500, message: 'Failed to fetch ebooks' });
+  }
+});
 
 export default discoverRoutes;

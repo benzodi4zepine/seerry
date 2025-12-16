@@ -22,6 +22,40 @@ export interface JellyfinUserResponse {
   PrimaryImageTag?: string;
 }
 
+export interface JellyfinUserPolicy {
+  IsAdministrator: boolean;
+  IsHidden: boolean;
+  IsDisabled: boolean;
+  EnableUserPreferenceAccess: boolean;
+  EnableRemoteControlOfOtherUsers: boolean;
+  EnableSharedDeviceControl: boolean;
+  EnableRemoteAccess: boolean;
+  EnableLiveTvManagement: boolean;
+  EnableLiveTvAccess: boolean;
+  EnableMediaPlayback: boolean;
+  EnableAudioPlaybackTranscoding: boolean;
+  EnableVideoPlaybackTranscoding: boolean;
+  EnablePlaybackRemuxing: boolean;
+  EnableContentDeletion: boolean;
+  EnableContentDeletionFromFolders: string[];
+  EnableContentDownloading: boolean;
+  EnableSyncTranscoding: boolean;
+  EnableMediaConversion: boolean;
+  EnabledDevices: string[];
+  EnableAllDevices: boolean;
+  EnabledChannels: string[];
+  EnableAllChannels: boolean;
+  EnabledFolders: string[];
+  EnableAllFolders: boolean;
+  InvalidLoginAttemptCount: number;
+  EnablePublicSharing: boolean;
+  BlockedTags: string[];
+  AllowedTags: string[];
+  EnableCollectionManagement: boolean;
+  EnableSubtitleManagement: boolean;
+  EnableLyricManagement: boolean;
+}
+
 export interface JellyfinDevice {
   Id: string;
   Name: string;
@@ -464,6 +498,124 @@ class JellyfinAPI extends ExternalAPI {
       );
 
       throw new ApiError(e.response?.status, ApiErrorCode.InvalidAuthToken);
+    }
+  }
+
+  public async createUser(
+    username: string,
+    password: string
+  ): Promise<JellyfinUserResponse> {
+    try {
+      const response = await this.post<JellyfinUserResponse>('/Users/New', {
+        Name: username,
+        Password: password,
+      });
+
+      logger.info(`Created new Jellyfin user: ${username}`, {
+        label: 'Jellyfin API',
+        userId: response.Id,
+      });
+
+      return response;
+    } catch (e) {
+      logger.error(
+        `Failed to create Jellyfin user ${username}: ${e.message}`,
+        { label: 'Jellyfin API', error: e.response?.status }
+      );
+
+      throw new ApiError(
+        e.response?.status ?? 500,
+        ApiErrorCode.Unknown
+      );
+    }
+  }
+
+  public async getUserPolicy(
+    userId: string
+  ): Promise<JellyfinUserPolicy> {
+    try {
+      const policy = await this.get<JellyfinUserPolicy>(
+        `/Users/${userId}/Policy`
+      );
+
+      return policy;
+    } catch (e) {
+      logger.error(
+        `Failed to get user policy for user ${userId}: ${e.message}`,
+        { label: 'Jellyfin API', error: e.response?.status }
+      );
+
+      throw new ApiError(e.response?.status, ApiErrorCode.InvalidAuthToken);
+    }
+  }
+
+  public async updateUserPolicy(
+    userId: string,
+    policy: Partial<JellyfinUserPolicy>
+  ): Promise<void> {
+    try {
+      // First get the current policy
+      const currentPolicy = await this.getUserPolicy(userId);
+
+      // Merge with new policy settings
+      const updatedPolicy = { ...currentPolicy, ...policy };
+
+      await this.post(`/Users/${userId}/Policy`, updatedPolicy);
+
+      logger.info(`Updated user policy for user ${userId}`, {
+        label: 'Jellyfin API',
+        changedFields: Object.keys(policy),
+      });
+    } catch (e) {
+      logger.error(
+        `Failed to update user policy for user ${userId}: ${e.message}`,
+        { label: 'Jellyfin API', error: e.response?.status }
+      );
+
+      throw new ApiError(
+        e.response?.status ?? 500,
+        ApiErrorCode.Unknown
+      );
+    }
+  }
+
+  public async disableUser(userId: string): Promise<void> {
+    try {
+      await this.updateUserPolicy(userId, { IsDisabled: true });
+
+      logger.info(`Disabled Jellyfin user ${userId}`, {
+        label: 'Jellyfin API',
+      });
+    } catch (e) {
+      logger.error(`Failed to disable user ${userId}: ${e.message}`, {
+        label: 'Jellyfin API',
+        error: e.response?.status,
+      });
+
+      throw new ApiError(
+        e.response?.status ?? 500,
+        ApiErrorCode.Unknown
+      );
+    }
+  }
+
+  public async enableUser(userId: string): Promise<void> {
+    try {
+      await this.updateUserPolicy(userId, { IsDisabled: false });
+
+      logger.info(`Enabled Jellyfin user ${userId}`, {
+        label: 'Jellyfin API',
+      });
+    } catch (e) {
+      logger.error(`Failed to enable user ${userId}: ${e.message}`, {
+        label: 'Jellyfin API',
+        error: e.response?.status,
+      });
+
+      throw new ApiError(
+        e.response?.status ?? 500,
+        ApiErrorCode.Unknown
+      );
     }
   }
 }

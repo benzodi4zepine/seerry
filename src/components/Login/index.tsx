@@ -6,6 +6,7 @@ import ImageFader from '@app/components/Common/ImageFader';
 import PageTitle from '@app/components/Common/PageTitle';
 import LanguagePicker from '@app/components/Layout/LanguagePicker';
 import JellyfinLogin from '@app/components/Login/JellyfinLogin';
+import JellyfinSignup from '@app/components/Login/JellyfinSignup';
 import LocalLogin from '@app/components/Login/LocalLogin';
 import PlexLoginButton from '@app/components/Login/PlexLoginButton';
 import useSettings from '@app/hooks/useSettings';
@@ -29,6 +30,7 @@ const messages = defineMessages('components.Login', {
   signinwithjellyfin: 'Use your {mediaServerName} account',
   signinwithoverseerr: 'Use your {applicationTitle} account',
   orsigninwith: 'Or sign in with',
+  createAccount: 'Create Free Trial Account',
 });
 
 const DiscordIcon = () => (
@@ -59,6 +61,7 @@ const Login = () => {
   const [mediaServerLogin, setMediaServerLogin] = useState(
     settings.currentSettings.mediaServerLogin
   );
+  const [showSignup, setShowSignup] = useState(false);
 
   // Effect that is triggered when the `authToken` comes back from the Plex OAuth
   // We take the token and attempt to sign in. If we get a success message, we will
@@ -256,10 +259,17 @@ const Login = () => {
                     {isJellyfin &&
                     (mediaServerLogin ||
                       !settings.currentSettings.localLogin) ? (
-                      <JellyfinLogin
-                        serverType={settings.currentSettings.mediaServerType}
-                        revalidate={revalidate}
-                      />
+                      showSignup ? (
+                        <JellyfinSignup
+                          revalidate={revalidate}
+                          onBackToLogin={() => setShowSignup(false)}
+                        />
+                      ) : (
+                        <JellyfinLogin
+                          serverType={settings.currentSettings.mediaServerType}
+                          revalidate={revalidate}
+                        />
+                      )
                     ) : (
                       settings.currentSettings.localLogin && (
                         <LocalLogin revalidate={revalidate} />
@@ -291,6 +301,20 @@ const Login = () => {
               >
                 {additionalLoginOptions}
               </div>
+
+              {/* Create Account Button for Jellyfin */}
+              {isJellyfin &&
+                !showSignup &&
+                (mediaServerLogin || !settings.currentSettings.localLogin) && (
+                  <div className="mt-6 text-center">
+                    <button
+                      onClick={() => setShowSignup(true)}
+                      className="text-sm text-slate-400 hover:text-white transition underline decoration-slate-500 decoration-dotted underline-offset-4"
+                    >
+                      {intl.formatMessage(messages.createAccount)}
+                    </button>
+                  </div>
+                )}
             </div>
           </>
         </div>
