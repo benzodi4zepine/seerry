@@ -6066,6 +6066,56 @@ paths:
                           type: string
                         title:
                           type: string
+  /discover/ebooks:
+    get:
+      summary: Get ebooks from Calibre-Web
+      description: Returns a list of ebooks from Calibre-Web. If no query parameter is provided, returns recent books. Otherwise performs a search.
+      tags:
+        - search
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+            example: game of thrones
+          description: Optional search query. If not provided, returns recent books.
+        - in: query
+          name: page
+          schema:
+            type: number
+            example: 1
+            default: 1
+      responses:
+        '200':
+          description: Ebooks data returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: number
+                  totalPages:
+                    type: number
+                  totalResults:
+                    type: number
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        title:
+                          type: string
+                        authors:
+                          type: array
+                          items:
+                            type: string
+                        summary:
+                          type: string
+                        coverUrl:
+                          type: string
   /request:
     get:
       summary: Get all requests

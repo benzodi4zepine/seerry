@@ -1,3 +1,4 @@
+import AnnasArchive from '@server/api/annasArchive';
 import CalibreWeb from '@server/api/calibreWeb';
 import PlexTvAPI from '@server/api/plextv';
 import type { SortOptions } from '@server/api/themoviedb';
@@ -927,18 +928,36 @@ discoverRoutes.get('/ebooks', async (req, res, next) => {
       process.env.CALIBRE_WEB_URL ?? 'https://calibre-web.apexnova.live';
     const username = process.env.CALIBRE_WEB_USER ?? 'blur';
     const password = process.env.CALIBRE_WEB_PASS ?? 'Blur@12345';
+    const annasApiKey = process.env.ANNAS_ARCHIVE_API_KEY;
 
-    if (!baseUrl) {
-      return next({ status: 503, message: 'Calibre-Web URL not configured' });
+    // Search both Calibre-Web and Anna's Archive in parallel
+    const promises = [];
+
+    // Calibre-Web search
+    if (baseUrl) {
+      const calibreClient = new CalibreWeb({
+        baseUrl,
+        username,
+        password,
+      });
+      promises.push(
+        query ? calibreClient.search(query) : calibreClient.getRecent()
+      );
     }
 
-    const client = new CalibreWeb({
-      baseUrl,
-      username,
-      password,
-    });
+    // Anna's Archive search or popular books
+    if (annasApiKey) {
+      const annasClient = new AnnasArchive(annasApiKey);
+      promises.push(
+        query ? annasClient.search(query) : annasClient.getPopular()
+      );
+    }
 
-    const results = await client.search(query);
+    // Wait for all searches to complete
+    const resultsArrays = await Promise.allSettled(promises);
+    const results = resultsArrays
+      .filter((r) => r.status === 'fulfilled')
+      .flatMap((r: any) => r.value);
 
     return res.status(200).json({
       page,
