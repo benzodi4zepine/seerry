@@ -136,6 +136,7 @@ export interface MainSettings {
   localLogin: boolean;
   mediaServerLogin: boolean;
   newPlexLogin: boolean;
+  jellyfinSignupEnabled: boolean;
   discoverRegion: string;
   streamingRegion: string;
   originalLanguage: string;
@@ -202,6 +203,7 @@ interface FullPublicSettings extends PublicSettings {
   emailEnabled: boolean;
   userEmailRequired: boolean;
   newPlexLogin: boolean;
+  jellyfinSignupEnabled: boolean;
   youtubeUrl: string;
 }
 
@@ -395,6 +397,7 @@ class Settings {
         localLogin: true,
         mediaServerLogin: true,
         newPlexLogin: true,
+        jellyfinSignupEnabled: true,
         discoverRegion: '',
         streamingRegion: '',
         originalLanguage: '',
@@ -704,6 +707,7 @@ class Settings {
       userEmailRequired:
         this.data.notifications.agents.email.options.userEmailRequired,
       newPlexLogin: this.data.main.newPlexLogin,
+      jellyfinSignupEnabled: this.data.main.jellyfinSignupEnabled,
       youtubeUrl: this.data.main.youtubeUrl,
     };
   }

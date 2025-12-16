@@ -596,6 +596,165 @@ authRoutes.post('/jellyfin', async (req, res, next) => {
   }
 });
 
+// Test route
+authRoutes.get('/test-route', (req, res) => {
+  return res.json({ message: 'Test route works!' });
+});
+
+authRoutes.post('/jellyfin/signup', async (req, res, next) => {
+  const settings = getSettings();
+  const userRepository = getRepository(User);
+  const body = req.body as {
+    username?: string;
+    password?: string;
+    email?: string;
+  };
+
+  // Validate signup is enabled
+  if (!settings.main.jellyfinSignupEnabled) {
+    return next({
+      status: 403,
+      message: 'Jellyfin signup is disabled',
+    });
+  }
+
+  // Validate required fields
+  if (!body.username || !body.password) {
+    return next({
+      status: 400,
+      message: 'Username and password are required',
+    });
+  }
+
+  // Validate password length
+  if (body.password.length < 6) {
+    return next({
+      status: 400,
+      message: 'Password must be at least 6 characters',
+    });
+  }
+
+  // Validate username format
+  if (!/^[a-zA-Z0-9_-]+$/.test(body.username)) {
+    return next({
+      status: 400,
+      message: 'Username can only contain letters, numbers, hyphens, and underscores',
+    });
+  }
+
+  try {
+    const hostname = getHostname();
+
+    // Check if user already exists in Seerr
+    const existingUser = await userRepository.findOne({
+      where: { jellyfinUsername: body.username },
+    });
+
+    if (existingUser) {
+      return next({
+        status: 409,
+        message: 'Username already exists',
+      });
+    }
+
+    // Create admin API client using API key from settings
+    const adminApiKey = process.env.JELLYFIN_ADMIN_API_KEY;
+    if (!adminApiKey) {
+      logger.error('JELLYFIN_ADMIN_API_KEY not configured', {
+        label: 'Auth',
+      });
+      return next({
+        status: 500,
+        message: 'Server configuration error',
+      });
+    }
+
+    const jellyfinAdmin = new JellyfinAPI(hostname, adminApiKey, 'BOT_seerr');
+
+    // Create user in Jellyfin
+    const jellyfinUser = await jellyfinAdmin.createUser(
+      body.username,
+      body.password
+    );
+
+    // Set user policy - full library access but no downloads
+    await jellyfinAdmin.updateUserPolicy(jellyfinUser.Id, {
+      IsDisabled: false,
+      EnableAllFolders: true,
+      EnableContentDownloading: false,
+      EnableMediaPlayback: true,
+      EnableAudioPlaybackTranscoding: true,
+      EnableVideoPlaybackTranscoding: true,
+      EnablePlaybackRemuxing: true,
+      EnableRemoteAccess: true,
+      EnableLiveTvAccess: true,
+      EnableUserPreferenceAccess: true,
+      EnableAllDevices: true,
+      EnableAllChannels: true,
+      IsAdministrator: false,
+      EnableContentDeletion: false,
+      EnableSubtitleManagement: false,
+      EnableLyricManagement: false,
+      EnableCollectionManagement: false,
+      EnablePublicSharing: false,
+    });
+
+    // Calculate expiry date (7 days from now)
+    const trialDays = Number(process.env.JELLYFIN_TRIAL_DURATION_DAYS) || 7;
+    const expiryDate = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
+
+    // Create user in Seerr
+    const deviceId = Buffer.from(`BOT_seerr_${body.username}`).toString('base64');
+    const user = new User({
+      email: body.email || `${body.username}@trial.local`,
+      jellyfinUsername: body.username,
+      jellyfinUserId: jellyfinUser.Id,
+      jellyfinDeviceId: deviceId,
+      permissions: settings.main.defaultPermissions,
+      userType: UserType.JELLYFIN,
+      expiryDate: expiryDate,
+    });
+
+    user.avatar = `/avatarproxy/${jellyfinUser.Id}?v=0`;
+
+    await userRepository.save(user);
+
+    logger.info(
+      `Created trial account for user ${body.username}, expires ${expiryDate.toISOString()}`,
+      {
+        label: 'Auth',
+        ip: req.ip,
+        userId: user.id,
+        jellyfinUserId: jellyfinUser.Id,
+        expiryDate: expiryDate.toISOString(),
+      }
+    );
+
+    // Auto-login the user
+    if (req.session) {
+      req.session.userId = user.id;
+    }
+
+    return res.status(201).json({
+      user: user.filter(),
+      expiryDate: expiryDate.toISOString(),
+      trialDays,
+    });
+  } catch (e) {
+    logger.error('Failed to create trial account', {
+      label: 'Auth',
+      errorMessage: e.message,
+      ip: req.ip,
+      username: body.username,
+    });
+
+    return next({
+      status: e.statusCode ?? 500,
+      message: e.message ?? 'Failed to create account',
+    });
+  }
+});
+
 authRoutes.post('/local', async (req, res, next) => {
   const settings = getSettings();
   const userRepository = getRepository(User);
@@ -888,3 +1047,4 @@ authRoutes.post('/reset-password/:guid', async (req, res, next) => {
 });
 
 export default authRoutes;
+
