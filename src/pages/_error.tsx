@@ -1,52 +1,39 @@
 import PageTitle from '@app/components/Common/PageTitle';
-import defineMessages from '@app/utils/defineMessages';
 import type { Undefinable } from '@app/utils/typeHelpers';
 import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import type { NextPage } from 'next';
 import Link from 'next/link';
-import { useIntl } from 'react-intl';
 
 interface ErrorProps {
   statusCode?: number;
 }
 
-const messages = defineMessages('pages', {
-  errormessagewithcode: '{statusCode} - {error}',
-  internalservererror: 'Internal Server Error',
-  serviceunavailable: 'Service Unavailable',
-  somethingwentwrong: 'Something Went Wrong',
-  oops: 'Oops',
-  returnHome: 'Return Home',
-});
-
 const Error: NextPage<ErrorProps> = ({ statusCode }) => {
-  const intl = useIntl();
-
   const getErrorMessage = (statusCode?: number) => {
     switch (statusCode) {
       case 500:
-        return intl.formatMessage(messages.internalservererror);
+        return 'Internal Server Error';
       case 503:
-        return intl.formatMessage(messages.serviceunavailable);
+        return 'Service Unavailable';
       default:
-        return statusCode
-          ? intl.formatMessage(messages.somethingwentwrong)
-          : intl.formatMessage(messages.oops);
+        return statusCode ? 'Something Went Wrong' : 'Oops';
     }
   };
+
+  const errorMessage = getErrorMessage(statusCode);
+  const fullMessage = statusCode
+    ? `${statusCode} - ${errorMessage}`
+    : errorMessage;
+
   return (
-    <div className="error-message">
-      <PageTitle title={getErrorMessage(statusCode)} />
-      <div className="text-4xl">
-        {statusCode
-          ? intl.formatMessage(messages.errormessagewithcode, {
-              statusCode,
-              error: getErrorMessage(statusCode),
-            })
-          : getErrorMessage(statusCode)}
-      </div>
-      <Link href="/" className="mt-2 flex">
-        {intl.formatMessage(messages.returnHome)}
+    <div className="error-message flex min-h-screen flex-col items-center justify-center">
+      <PageTitle title={errorMessage} />
+      <div className="text-4xl font-bold text-white">{fullMessage}</div>
+      <Link
+        href="/"
+        className="mt-4 flex items-center text-indigo-500 hover:text-indigo-400"
+      >
+        Return Home
         <ArrowRightCircleIcon className="ml-2 h-6 w-6" />
       </Link>
     </div>

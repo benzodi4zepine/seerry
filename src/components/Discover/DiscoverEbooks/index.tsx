@@ -45,7 +45,7 @@ const DiscoverEbooks = () => {
     await fetchBooks(searchQuery);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
@@ -71,7 +71,7 @@ const DiscoverEbooks = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder={intl.formatMessage(messages.searchPlaceholder)}
             className="flex-1 rounded-md border border-gray-500 bg-gray-800 px-4 py-2 text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
           />
@@ -106,6 +106,14 @@ const DiscoverEbooks = () => {
             <div
               key={book.id}
               onClick={() => setSelectedBook(book)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSelectedBook(book);
+                }
+              }}
+              role="button"
+              tabIndex={0}
               className="group relative cursor-pointer transition-all duration-300"
             >
               <div className="overflow-hidden rounded-lg bg-gray-800 shadow-xl ring-1 ring-gray-700 transition-all group-hover:scale-105 group-hover:shadow-2xl group-hover:ring-indigo-500">
@@ -119,20 +127,32 @@ const DiscoverEbooks = () => {
                   </div>
                 ) : (
                   <div className="flex aspect-[2/3] w-full items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
-                    <div className="text-center p-4">
-                      <svg className="mx-auto h-12 w-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    <div className="p-4 text-center">
+                      <svg
+                        className="mx-auto h-12 w-12 text-gray-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                        />
                       </svg>
-                      <p className="mt-2 text-xs text-gray-500 line-clamp-2">{book.title}</p>
+                      <p className="line-clamp-2 mt-2 text-xs text-gray-500">
+                        {book.title}
+                      </p>
                     </div>
                   </div>
                 )}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 pt-12 opacity-0 transition-opacity group-hover:opacity-100">
-                  <h3 className="text-sm font-bold text-white line-clamp-2 drop-shadow-lg">
+                  <h3 className="line-clamp-2 text-sm font-bold text-white drop-shadow-lg">
                     {book.title}
                   </h3>
                   {book.authors && book.authors.length > 0 && (
-                    <p className="mt-1 text-xs text-gray-300 line-clamp-1 drop-shadow">
+                    <p className="line-clamp-1 mt-1 text-xs text-gray-300 drop-shadow">
                       {book.authors.join(', ')}
                     </p>
                   )}

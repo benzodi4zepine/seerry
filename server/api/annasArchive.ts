@@ -50,46 +50,95 @@ export default class AnnasArchive {
   }
 
   public async getPopular(): Promise<CalibreBook[]> {
-    // Fetch popular books by searching for common terms
-    const popularSearches = ['fiction', 'fantasy', 'science', 'history', 'programming'];
-    const randomSearch = popularSearches[Math.floor(Math.random() * popularSearches.length)];
+    // Fetch popular books by searching for multiple terms and combining results
+    const popularSearches = [
+      'fiction',
+      'fantasy',
+      'science',
+      'history',
+      'programming',
+    ];
+    const allBooks: CalibreBook[] = [];
+    const seenMd5s = new Set<string>();
 
     try {
-      const response = await axios.get(`${this.baseUrl}/search`, {
-        params: {
-          q: randomSearch,
-          page: 1,
-          sort: 'mostRelevant',
-        },
+      // Fetch from multiple search terms to get variety
+      for (const searchTerm of popularSearches.slice(0, 3)) {
+        const response = await axios.get(`${this.baseUrl}/search`, {
+          params: {
+            q: searchTerm,
+            page: 1,
+            sort: 'mostRelevant',
+          },
+          headers: {
+            'x-rapidapi-key': this.apiKey,
+            'x-rapidapi-host': 'annas-archive-api.p.rapidapi.com',
+          },
+        });
+
+        const books = response.data?.books || [];
+
+        // Add unique books only
+        for (const book of books) {
+          if (!seenMd5s.has(book.md5)) {
+            seenMd5s.add(book.md5);
+            allBooks.push({
+              id: `aa-${book.md5}`,
+              title: book.title || 'Unknown Title',
+              authors: book.author ? [book.author] : [],
+              summary: book.genre || '',
+              coverUrl: book.imgUrl || '',
+              downloadLinks: book.format
+                ? [
+                    {
+                      format: book.format.toUpperCase(),
+                      url: `https://annas-archive.org/md5/${book.md5}`,
+                    },
+                  ]
+                : [],
+              publisher: '',
+              published: book.year?.toString() || '',
+              language: '',
+            });
+          }
+
+          // Limit to 30 unique books total
+          if (allBooks.length >= 30) {
+            return allBooks;
+          }
+        }
+      }
+
+      return allBooks;
+    } catch (e) {
+      console.error('Failed to get popular books from Annas Archive:', e);
+      return [];
+    }
+  }
+
+  public async getDownloadLink(md5: string): Promise<string | null> {
+    try {
+      const response = await axios.get(`${this.baseUrl}/download/${md5}`, {
         headers: {
           'x-rapidapi-key': this.apiKey,
           'x-rapidapi-host': 'annas-archive-api.p.rapidapi.com',
         },
       });
 
-      const books = response.data?.books || [];
+      // The API should return download links
+      if (response.data?.downloadLink) {
+        return response.data.downloadLink;
+      }
 
-      return books.slice(0, 20).map((book: any) => ({
-        id: `aa-${book.md5}`,
-        title: book.title || 'Unknown Title',
-        authors: book.author ? [book.author] : [],
-        summary: book.genre || '',
-        coverUrl: book.imgUrl || '',
-        downloadLinks: book.format
-          ? [
-              {
-                format: book.format.toUpperCase(),
-                url: `https://annas-archive.org/md5/${book.md5}`,
-              },
-            ]
-          : [],
-        publisher: '',
-        published: book.year?.toString() || '',
-        language: '',
-      }));
+      // Fallback to direct link if available
+      if (response.data?.url) {
+        return response.data.url;
+      }
+
+      return null;
     } catch (e) {
-      console.error('Failed to get popular books from Annas Archive:', e);
-      return [];
+      console.error('Failed to get download link from Annas Archive:', e);
+      return null;
     }
   }
 

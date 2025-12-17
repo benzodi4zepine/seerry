@@ -1,5 +1,4 @@
 import AnnasArchive from '@server/api/annasArchive';
-import CalibreWeb from '@server/api/calibreWeb';
 import PlexTvAPI from '@server/api/plextv';
 import type { SortOptions } from '@server/api/themoviedb';
 import TheMovieDb from '@server/api/themoviedb';
@@ -924,40 +923,23 @@ discoverRoutes.get('/ebooks', async (req, res, next) => {
     const page = Number(req.query.page) || 1;
     const query = (req.query.q as string) || '';
 
-    const baseUrl =
-      process.env.CALIBRE_WEB_URL ?? 'https://calibre-web.apexnova.live';
-    const username = process.env.CALIBRE_WEB_USER ?? 'blur';
-    const password = process.env.CALIBRE_WEB_PASS ?? 'Blur@12345';
     const annasApiKey = process.env.ANNAS_ARCHIVE_API_KEY;
 
-    // Search both Calibre-Web and Anna's Archive in parallel
-    const promises = [];
-
-    // Calibre-Web search
-    if (baseUrl) {
-      const calibreClient = new CalibreWeb({
-        baseUrl,
-        username,
-        password,
+    if (!annasApiKey) {
+      return res.status(503).json({
+        error: "Anna's Archive API key not configured",
+        page,
+        totalPages: 0,
+        totalResults: 0,
+        results: [],
       });
-      promises.push(
-        query ? calibreClient.search(query) : calibreClient.getRecent()
-      );
     }
 
-    // Anna's Archive search or popular books
-    if (annasApiKey) {
-      const annasClient = new AnnasArchive(annasApiKey);
-      promises.push(
-        query ? annasClient.search(query) : annasClient.getPopular()
-      );
-    }
-
-    // Wait for all searches to complete
-    const resultsArrays = await Promise.allSettled(promises);
-    const results = resultsArrays
-      .filter((r) => r.status === 'fulfilled')
-      .flatMap((r: any) => r.value);
+    // Only use Anna's Archive
+    const annasClient = new AnnasArchive(annasApiKey);
+    const results = query
+      ? await annasClient.search(query)
+      : await annasClient.getPopular();
 
     return res.status(200).json({
       page,
@@ -968,6 +950,35 @@ discoverRoutes.get('/ebooks', async (req, res, next) => {
   } catch (e) {
     logger.error('Failed to fetch ebooks', { error: e });
     return next({ status: 500, message: 'Failed to fetch ebooks' });
+  }
+});
+
+discoverRoutes.get('/ebooks/download/:md5', async (req, res, next) => {
+  try {
+    const { md5 } = req.params;
+    const annasApiKey = process.env.ANNAS_ARCHIVE_API_KEY;
+
+    if (!annasApiKey) {
+      return res.status(503).json({
+        error: "Anna's Archive API key not configured",
+      });
+    }
+
+    const annasClient = new AnnasArchive(annasApiKey);
+    const downloadLink = await annasClient.getDownloadLink(md5);
+
+    if (!downloadLink) {
+      return res.status(404).json({
+        error: 'Download link not found',
+      });
+    }
+
+    return res.status(200).json({
+      downloadLink,
+    });
+  } catch (e) {
+    logger.error('Failed to get download link', { error: e });
+    return next({ status: 500, message: 'Failed to get download link' });
   }
 });
 
