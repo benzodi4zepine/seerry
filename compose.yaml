@@ -1,8 +1,9 @@
 services:
-  seerr:
+  portal:
+    image: seerry-portal:prod
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     environment:
       - WIZARR_URL=https://wizarr.apexnova.live
       - WIZARR_TOKEN=Gq71lsOIjXF6iiyvJ6l7BBuoF5GocMSB3NXyt_h5VqE
@@ -15,7 +16,38 @@ services:
       - ANNAS_ARCHIVE_API_KEY=511be2afddmshd00724f1c1d163ep111725jsn73ae5ff92fcb
     ports:
       - 5055:5055
+    # Production run (no nodemon/ts-node)
+    command: sh -lc "pnpm install --frozen-lockfile && pnpm build && pnpm start"
+
+    restart: unless-stopped
+
+    # No source bind mount in prod
     volumes:
-      - .:/app:rw,cached
       - /app/node_modules
       - /app/.next
+
+    labels:
+      com.github.saltbox.saltbox_managed: "true"
+      traefik.enable: "true"
+
+      traefik.http.routers.portal-http.entrypoints: "web"
+      traefik.http.routers.portal-http.rule: "Host(`portal.apexnova.live`)"
+      traefik.http.routers.portal-http.middlewares: "globalHeaders@file,redirect-to-https@docker,robotHeaders@file"
+      traefik.http.routers.portal-http.service: "portal"
+
+      traefik.http.routers.portal.entrypoints: "websecure"
+      traefik.http.routers.portal.rule: "Host(`portal.apexnova.live`)"
+      traefik.http.routers.portal.middlewares: "globalHeaders@file,secureHeaders@file,robotHeaders@file"
+      traefik.http.routers.portal.service: "portal"
+      traefik.http.routers.portal.tls: "true"
+      traefik.http.routers.portal.tls.certresolver: "cfdns"
+      traefik.http.routers.portal.tls.options: "securetls@file"
+
+      traefik.http.services.portal.loadbalancer.server.port: "5055"
+
+    networks:
+      - saltbox
+
+networks:
+  saltbox:
+    external: true
