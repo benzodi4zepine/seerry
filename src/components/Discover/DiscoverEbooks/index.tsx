@@ -1,11 +1,11 @@
 import Button from '@app/components/Common/Button';
 import Header from '@app/components/Common/Header';
 import PageTitle from '@app/components/Common/PageTitle';
-import BookDetailModal from '@app/components/Ebooks/BookDetailModal';
 import defineMessages from '@app/utils/defineMessages';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 import type { CalibreBook } from '@server/api/calibreWeb';
 import axios from 'axios';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 
@@ -19,11 +19,11 @@ const messages = defineMessages('components.Discover.DiscoverEbooks', {
 
 const DiscoverEbooks = () => {
   const intl = useIntl();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [books, setBooks] = useState<CalibreBook[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [selectedBook, setSelectedBook] = useState<CalibreBook | null>(null);
 
   const fetchBooks = async (query = '') => {
     setIsLoading(true);
@@ -49,6 +49,13 @@ const DiscoverEbooks = () => {
     if (e.key === 'Enter') {
       handleSearch();
     }
+  };
+
+  const handleBookClick = (book: CalibreBook) => {
+    // Store book data in localStorage for the detail page
+    localStorage.setItem(`ebook_${book.id}`, JSON.stringify(book));
+    // Navigate to the book detail page
+    router.push(`/ebook/${book.id}`);
   };
 
   // Load books on component mount
@@ -105,11 +112,11 @@ const DiscoverEbooks = () => {
           {books.map((book) => (
             <div
               key={book.id}
-              onClick={() => setSelectedBook(book)}
+              onClick={() => handleBookClick(book)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  setSelectedBook(book);
+                  handleBookClick(book);
                 }
               }}
               role="button"
@@ -162,11 +169,6 @@ const DiscoverEbooks = () => {
           ))}
         </div>
       )}
-
-      <BookDetailModal
-        book={selectedBook}
-        onClose={() => setSelectedBook(null)}
-      />
     </>
   );
 };

@@ -25,11 +25,19 @@ export default class AnnasArchive {
 
       const books = response.data?.books || [];
 
+      // Debug: Log the first book to see available fields
+      if (books.length > 0) {
+        console.log(
+          'Sample book data from API:',
+          JSON.stringify(books[0], null, 2)
+        );
+      }
+
       return books.map((book: any) => ({
         id: `aa-${book.md5}`,
         title: book.title || 'Unknown Title',
         authors: book.author ? [book.author] : [],
-        summary: book.genre || '',
+        summary: book.description || book.synopsis || book.summary || '',
         coverUrl: book.imgUrl || '',
         downloadLinks: book.format
           ? [
@@ -39,9 +47,9 @@ export default class AnnasArchive {
               },
             ]
           : [],
-        publisher: '',
+        publisher: book.publisher || '',
         published: book.year?.toString() || '',
-        language: '',
+        language: book.language || '',
       }));
     } catch (e) {
       console.error('Failed to search Annas Archive:', e);
@@ -86,7 +94,7 @@ export default class AnnasArchive {
               id: `aa-${book.md5}`,
               title: book.title || 'Unknown Title',
               authors: book.author ? [book.author] : [],
-              summary: book.genre || '',
+              summary: book.description || book.synopsis || book.summary || '',
               coverUrl: book.imgUrl || '',
               downloadLinks: book.format
                 ? [
@@ -96,9 +104,9 @@ export default class AnnasArchive {
                     },
                   ]
                 : [],
-              publisher: '',
+              publisher: book.publisher || '',
               published: book.year?.toString() || '',
-              language: '',
+              language: book.language || '',
             });
           }
 
